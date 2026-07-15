@@ -1,7 +1,7 @@
 ### first things first
 1. Repo forked and cloned
 2. dataset downloaded
-3. 01_starter_code and 02_starter code ran and checked
+3. 01_starter_code and 02_starter_code ran and checked
 4. 2 branches created
     1. Adi
     2. Nabarun
@@ -41,7 +41,7 @@ The primary goal of Phase 1 was to establish the "Rosetta Stone" of the dataset:
 * **Key Insight:** Analyzed centroid shifts and confirmed that the Stratonics thermal camera is mounted **co-axially**. The melt pool remains relatively stationary near the center of the 400x400 frame while the substrate moves beneath it.
 
 ### 3. SEM Substrate Spatial Mapping
-* **Action:** Built a spatial mapping script (`04_sem_feature_extraction.ipynb`) to align Zeiss SEM substrate imagery with the thermal X-axis.
+* **Action:** Built a spatial mapping script (`03_phase1_melt_pool_feature_extraction.ipynb`) to align Zeiss SEM substrate imagery with the thermal X-axis.
 * **Challenges Solved:** * Corrected the **reverse-coordinate scan direction** (SEM Tile 01 starts at 100mm and moves backwards to 20mm).
     * Implemented **dynamic step-size calculation** based on file counts (e.g., 100mm / 13 or 14 tiles = ~7.1 to 7.6 mm Field of View).
     * Resolved a missing file anomaly for Track 14 caused by a local naming error.
