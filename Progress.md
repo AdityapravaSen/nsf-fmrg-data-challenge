@@ -2133,3 +2133,4 @@ Instead,
 This indicates that Track 10's unusual behavior cannot be attributed
 solely to baseline estimation artifacts.
 
+Experiment 11 concluded that PCA is an appropriate representation for the normalized cross-sectional shape component. Five principal components preserve the dominant bead geometry while maintaining distinct Track 10 low-coherence regimes. PCA alone is insufficient as a complete descriptor because amplitude, signed elevation, and validity metadata are intentionally excluded by normalization and must be retained as companion descriptor components.
