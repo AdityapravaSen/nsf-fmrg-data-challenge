@@ -5,7 +5,7 @@ Here's a phased breakdown with dependencies mapped out, split two ways. I've tri
 | Task | Branch | Who |
 |---|---|---|
 | Download Zenodo data, verify folder layout matches README | — (no branch, just local setup) | Both |
-| Run `01_starter_code_loading_and_visualization.ipynb` end-to-end, confirm it works on your machines | — | Both |
+| Run `01_starter_code_loading_and_visualization.ipynb` and `02_starter_code_loading_and_visualization.ipynb` end-to-end, confirm it works on your machines | — | Both |
 
 Don't skip this — if the notebook doesn't run cleanly for both of you first, everything downstream wastes time debugging environment issues instead of the actual project.
 
