@@ -14,13 +14,13 @@ Don't skip this — if the notebook doesn't run cleanly for both of you first, e
 ## Phase 1 — Data Understanding & Alignment (blocks everything else)
 
 **Person A — thermal + SEM side**
-- Branch: `feature/thermal-sem-alignment`
+- Branch: `adi`
 - Verify `extract_final_thermal_frames` laser on/off detection actually looks right on all 4 tracks (visually, frame-by-frame)
 - Confirm SEM tile → x-position mapping is correct (remember: reversed numbering)
 - Write a function that maps thermal frame index ↔ SEM tile ↔ common x-coordinate — this is the "Rosetta stone" the rest of the project depends on
 
 **Person B — height map side**
-- Branch: `feature/heightmap-target-extraction`
+- Branch: `nabarun`
 - Verify `robust_plane_detrend` output looks sane on all 4 tracks
 - Write the actual **target extraction**: from detrended `Z_mm`, extract per-x-position width, boundary position, contour deviation, roughness (this is the big missing piece from the README)
 
