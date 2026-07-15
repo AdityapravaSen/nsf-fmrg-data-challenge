@@ -7,9 +7,13 @@
 **Development tracks:** 8, 10, 14\
 **Sealed track:** 21 --- do not load or inspect during method
 development\
-**Last completed major experiment:** Experiment 05 --- persistence
-corridor\
-**Next planned experiment:** Experiment 06 --- geometry-definition audit
+**Last completed major experiment:** Experiment 10 --- Geometry
+descriptor requirements audit\
+**Current scientific status:** Experiments 03--10 completed (Track 21
+remains sealed)\
+**Current project phase:** Phase II --- Geometry representation design\
+**Next planned experiment:** Experiment 11 --- Geometry descriptor
+implementation comparison
 
 ------------------------------------------------------------------------
 
@@ -27,6 +31,39 @@ The central principle is:
 
 A sophisticated multimodal model cannot rescue an arbitrary or unstable
 target definition.
+
+------------------------------------------------------------------------
+
+# Project phases
+
+## Phase I (Completed) --- scientific discovery (Experiments 03--10)
+
+Goals:
+
+• Understand height-map morphology
+
+• Identify failure modes
+
+• Eliminate unstable assumptions
+
+• Establish descriptor requirements
+
+## Phase II (Current) --- geometry representation design (Experiments
+11+)
+
+Goals:
+
+• Compare descriptor implementations
+
+• Select a physically meaningful prediction target
+
+## Phase III (Future) --- multimodal learning
+
+Goals:
+
+• Predict local geometry descriptors from thermal and SEM observations
+
+• Evaluate on sealed Track 21
 
 ------------------------------------------------------------------------
 
@@ -1175,7 +1212,7 @@ Therefore the strongest defensible Track 10 conclusion is:
 
 ------------------------------------------------------------------------
 
-# 20. Scientific evidence chain after Experiments 03--06
+# 20. Scientific evidence chain after Experiments 03--10
 
 The current cumulative interpretation is:
 
@@ -1238,6 +1275,31 @@ The unresolved blocker is:
 
 > **Object identity: which spatial structure in the profilometry
 > corresponds to the physical processed track?**
+
+Experiment 08 showed that baseline correction successfully removed
+systematic substrate offset but could not fully explain the observed
+differences among tracks.
+
+Experiment 09 demonstrated that normalized cross-sectional geometry is
+highly coherent within Tracks 8 and 14, whereas Track 10 contains
+multiple longitudinal morphological regimes rather than one globally
+coherent geometry.
+
+The combination of Experiments 08 and 09 shifts the scientific
+interpretation away from "baseline artifact versus geometry" and toward
+understanding longitudinal process evolution and local geometric state
+changes.
+
+Experiment 10 shifted the project into a new phase.
+
+Rather than continuing to optimize boundary extraction, the project now
+focuses on designing a geometric representation suitable for multimodal
+prediction.
+
+The audit showed that normalized profile shape, local amplitude, and
+measurement-validity information are essential components of any future
+descriptor, whereas threshold-defined width is not sufficiently robust
+to serve as the primary prediction target.
 
 ------------------------------------------------------------------------
 
@@ -1360,41 +1422,16 @@ source of prior information.
 
 **Do not yet implement a production target extractor.**
 
-The immediate task is a read-only scientific audit of the actual 2D
-morphology on Tracks 8, 10, and 14.
+The remaining challenge is no longer validating whether the observed
+morphology is real, nor optimizing another segmentation algorithm.
 
-The audit must answer:
+The project now enters Phase II: Geometry Representation Design.
 
-> What visual and geometric evidence can identify the same physical
-> processed-track object across adjacent x positions without assuming
-> positive height, preferred width, a narrow center band, strongest
-> activity, or strongest gradient?
+Future work will compare candidate descriptor implementations against
+the requirements established in Experiment 10 before any machine-
+learning model is developed.
 
 Track 21 remains sealed.
-
-The next review should inspect:
-
--   detrended z(x,y);
--   signed substrate residual;
--   absolute residual/activity;
--   structural-transition activity where useful;
--   finite-support and NaN topology.
-
-It should explicitly determine whether:
-
--   broad positive humps form coherent longitudinal structures;
--   negative valleys are coherent structures, intermittent defects,
-    artifacts, or part of the processed region;
--   mixed-sign disturbance bands travel together;
--   Track 10 contains a coherent structure missed by positive
-    thresholding;
--   the violent 1D boundary jumps contradict visible 2D morphology;
--   one dominant disturbance complex exists per track;
--   full processed-track width is identifiable from profilometry alone.
-
-This planned review is the **Experiment 07 formulation audit**.
-
-It is not yet an implementation experiment.
 
 ------------------------------------------------------------------------
 
@@ -1717,37 +1754,10 @@ as clean ground-truth evidence that one boundary definition is superior.
 
 # 28. Immediate next step and update checklist
 
-Run a **read-only GPT-5.5 scientific review / Experiment 07 formulation
-audit**.
-
-The reviewer should inspect:
-
-1.  `.github/copilot-instructions.md`;
-2.  this cumulative `Progress.md`;
-3.  Experiments 03--06 source and executed evidence;
-4.  the latest corrected Experiment 06 run;
-5.  all representative Experiment 06 diagnostics;
-6.  actual 2D detrended morphology for Tracks 8, 10, and 14;
-7.  signed residual structure;
-8.  absolute disturbance structure;
-9.  structural-transition activity;
-10. NaN topology.
-
-The next major update to this report should record:
-
-1.  exact files and run directories inspected by GPT-5.5;
-2.  its independent audit of Experiment 06's correspondence confounds;
-3.  2D morphology findings for Tracks 8, 10, and 14;
-4.  whether broad humps, negative valleys, shoulders, or disturbance
-    complexes are longitudinally coherent;
-5.  whether Track 10 contains a coherent object missed by positive
-    thresholding;
-6.  whether 2D object identity is strongly supported, provisionally
-    supported, unclear, or rejected;
-7.  what profilometry alone can defensibly identify;
-8.  at most three competing Experiment 07 formulations;
-9.  the selected next experiment, if any;
-10. whether multimodal evidence is required before naming the object.
+Formulate and evaluate candidate local geometry descriptors
+(Experiment 10), comparing scalar and vector-valued representations that
+preserve longitudinal morphology while remaining compatible with
+downstream predictive modeling.
 
 ------------------------------------------------------------------------
 
@@ -1789,16 +1799,337 @@ The dense-grid Method C and D boundaries also jump implausibly across
 large portions of the y-domain, consistent with algorithms hopping
 between unrelated structural features.
 
-The current scientific blocker is therefore **object identity**.
+The scientific focus has now shifted from extraction to representation.
 
-The next task is not another threshold, scoring, or gradient-tuning
-pass. It is a read-only 2D morphology and spatial-coherence audit asking
-whether the same physical processed-track structure can be identified
-across adjacent x positions before local boundaries are extracted.
+Experiment 10 established that threshold-defined width is not
+sufficiently robust to serve as the principal prediction target.
+Instead, the accumulated evidence indicates that any useful geometric
+descriptor must preserve normalized cross-sectional shape, local
+amplitude, longitudinal process-state variation, and
+measurement-validity information.
 
-A 2D formulation is only a hypothesis. Spatial continuity must not be
-confused with physical validity. If profilometry alone does not support
-a unique full processed-track object, the target may need to be narrowed
-to an honestly named descriptor such as raised-crown width, decomposed
-into multiple morphology descriptors, represented probabilistically, or
-semantically anchored using aligned thermal/SEM evidence.
+The next stage of the project will therefore compare alternative
+descriptor implementations while keeping these scientifically derived
+requirements fixed. Only after selecting a defensible descriptor will
+multimodal machine-learning models be developed.
+
+------------------------------------------------------------------------
+
+# 33. Experiment 10 --- geometry descriptor requirements audit
+
+## Purpose
+
+Following Experiments 03--09, the primary scientific question shifted
+from boundary extraction toward representation design.
+
+Rather than asking which extraction algorithm is best, Experiment 10
+asked:
+
+> **What information must any useful local geometry descriptor
+> preserve?**
+
+This experiment intentionally did **not** compare PCA, splines, or other
+mathematical encodings. Instead, it established the scientific
+requirements that any future descriptor should satisfy.
+
+## Major findings
+
+The executed audit classified candidate geometric properties according
+to their usefulness as downstream prediction targets.
+
+### Essential
+
+-   Offset- and amplitude-normalized cross-sectional shape.
+-   Local amplitude (relief).
+-   Finite-support and validity state.
+
+### Useful
+
+-   Signed elevation.
+-   Peak position.
+-   Profile asymmetry.
+-   Roughness / curvature.
+-   Multi-peak structure.
+
+### Unsuitable
+
+-   Threshold-defined width.
+-   Single deterministic boundary interval.
+-   Raw gradient-transition boundaries.
+
+This is consistent with the instability observed in Experiments 04--06.
+
+## Scientific interpretation
+
+Experiment 10 represents a transition from geometric extraction toward
+representation design.
+
+The accumulated evidence indicates that a single scalar quantity such as
+width or maximum height cannot adequately represent the local
+morphology.
+
+Instead, the executed evidence suggests that a useful prediction target
+must preserve:
+
+-   normalized profile shape,
+-   local amplitude,
+-   longitudinal regime information,
+-   finite-support quality,
+-   baseline-validity information.
+
+Importantly, Experiment 10 deliberately stopped short of recommending
+PCA or any other mathematical encoding. The experiment established
+requirements rather than implementations.
+
+------------------------------------------------------------------------
+
+# 30. Experiment 07A --- 2D object-identity audit artifact generation
+
+## Purpose
+
+Experiment 07 was split into phases. Phase 07A was limited to
+implementation and artifact generation only.
+
+The goal was to create a reliable exploratory audit pipeline for later
+scientific inspection of 2D x-y height-map morphology. No scientific
+interpretation, final geometry target, processed-track object selection,
+or final width extraction was performed in this phase.
+
+Artifact:
+
+`scripts/07_heightmap_2d_object_identity_audit.py`
+
+Executed with:
+
+`/opt/homebrew/opt/python@3.11/bin/python3.11 scripts/07_heightmap_2d_object_identity_audit.py`
+
+Successful output:
+
+`processed_data/run_outputs/07_heightmap_2d_object_identity_audit_20260714_212755/`
+
+Tracks analyzed:
+
+-   8;
+-   10;
+-   14.
+
+Track 21 remained sealed.
+
+## Guardrails preserved
+
+The script uses:
+
+-   the organizer loader `src/nsf_fmrg_data.py::load_wyko_asc`;
+-   the common 20--100 mm physical x window from the loader;
+-   the same substrate-focused detrending context used in Experiments
+    05 and 06, excluding y = 0.65--1.35 mm for plane fitting;
+-   one shared configuration across Tracks 8, 10, and 14;
+-   no per-track tuning.
+
+The script preserves:
+
+-   original NaNs;
+-   finite-support topology;
+-   physical x/y coordinates.
+
+It does not:
+
+-   globally fill NaNs;
+-   interpolate through missing regions;
+-   bridge unsupported areas;
+-   select a final object;
+-   output a processed-track width.
+
+## 2D fields generated
+
+For each development track, the pipeline generated diagnostics for five
+separate evidence channels:
+
+1.  detrended z(x,y);
+2.  signed residual relative to substrate baseline;
+3.  absolute residual magnitude;
+4.  y-gradient magnitude/activity;
+5.  finite-support / NaN topology.
+
+These evidence channels were deliberately kept separate. They were not
+collapsed into one final activity score.
+
+## Neutral candidate-structure inventory
+
+The pipeline generated exploratory candidate structures from separate
+2D evidence channels using shared saliency levels:
+
+-   2.0;
+-   3.0;
+-   4.0.
+
+The candidate structures are neutral connected regions and are labeled
+with generic identifiers such as `structure_0001`, `structure_0002`,
+and so on.
+
+They are **not** labeled as tracks, boundaries, crowns, or final
+processed regions.
+
+The inventory records spatial extent, x-support, y-location,
+fragmentation, finite-support fraction, and NaN-contact information so
+that later review can evaluate object identity and missingness without
+forcing a target.
+
+## Generated figures
+
+For each of Tracks 8, 10, and 14, the run produced:
+
+-   detrended z figure;
+-   signed residual figure;
+-   absolute residual figure;
+-   gradient activity figure;
+-   NaN topology figure;
+-   candidate structure overlay on signed residual;
+-   candidate structure overlay on absolute residual;
+-   candidate structure overlay on gradient field.
+
+Total figures generated:
+
+-   **24**
+
+## Generated tables
+
+The run produced machine-readable tables under the run directory's
+`tables/` folder:
+
+-   `structure_inventory.csv`
+-   `structure_channel_summary.csv`
+-   `support_topology_summary.csv`
+-   `field_summary.csv`
+-   `run_metadata.json`
+
+The executed run reported:
+
+-   structure inventory rows: **840**;
+-   support-topology rows: **840**.
+
+## Current status after 07A
+
+Experiment 07A created the diagnostic artifact set needed for the next
+phase of review.
+
+No conclusions were drawn from these artifacts in 07A. The next step is
+to inspect the generated 2D figures and tables scientifically before
+deciding whether the 2D object-identity hypothesis is supported,
+unclear, or rejected.
+
+Observations for Track 8:
+
+Strong continuous positive residual corridor spanning nearly the full 20–100 mm range.
+Localized high-saliency peaks are embedded within this corridor rather than replacing it.
+Experiment 07 currently inventories salient substructures, not the full corridor.
+Gradient activity appears diffuse and may be less informative than residual magnitude for defining candidate geometry.
+Hypothesis: the persistent support corridor may be a more fundamental geometric entity than isolated peaks.
+
+------------------------------------------------------------------------
+
+# 31. Experiment 08 --- baseline cross-section audit
+
+## Purpose
+
+The purpose of Experiment 08 was to determine whether the apparent
+visual differences between Tracks 8, 10, and 14 arose primarily from:
+
+-   baseline-estimation artifacts,
+-   amplitude differences,
+-   or genuine geometric differences.
+
+Rather than manually selecting representative cross-sections, quiet,
+moderate, and strong events were selected objectively using an
+event-strength statistic computed from the signed residual within the
+central corridor.
+
+## Selection methodology
+
+Event strength was defined using:
+
+`median(|signed residual| / substrate MAD)`
+
+computed on finite samples with finite-support requirements and edge
+exclusion.
+
+Selections were then defined as:
+
+-   quiet = nearest 10th percentile;
+-   moderate = nearest 50th percentile;
+-   strong = nearest 90th percentile.
+
+## Major findings
+
+-   The substrate residual median after baseline correction was
+    essentially 0 µm for all three tracks.
+-   There was no evidence of systematic track-wide baseline bias.
+-   Track 10 quiet case required fallback baseline estimation because
+    of insufficient substrate support.
+-   Several selected cross-sections had relatively low finite support.
+
+## Scientific interpretation
+
+Experiment 08 did not provide decisive evidence that Tracks 8, 10 and 14
+possess fundamentally different signed residual geometry after baseline
+correction.
+
+Instead, the audit remained formally ambiguous.
+
+However, Track 10 continued to exhibit isolated suspicious
+cross-sections that could not be explained solely by systematic baseline
+offset.
+
+------------------------------------------------------------------------
+
+# 32. Experiment 09 --- longitudinal shape-coherence audit
+
+## Purpose
+
+Determine whether normalized cross-sectional geometry remains coherent
+along each track after removing vertical offset and amplitude scaling.
+
+## Method
+
+-   Normalize every cross-section.
+-   Compare profile shapes.
+-   Compute pairwise similarity.
+-   Derive medoid profile.
+-   Analyze coherence versus x separation.
+
+## Major findings
+
+### Track 8
+
+-   very high coherence
+-   median similarity ≈ 0.916
+
+### Track 14
+
+-   high coherence
+-   median similarity ≈ 0.847
+
+### Track 10
+
+-   coherent over short distances
+-   several distinct low-coherence longitudinal regions
+-   morphology changes substantially between approximately 78--97 mm
+
+The previously suspicious Track 10 quiet section remained an outlier
+even after normalization.
+
+## Interpretation
+
+Experiment 09 demonstrates that removing baseline offset and amplitude
+differences does not eliminate the observed longitudinal structure.
+
+Instead,
+
+-   Tracks 8 and 14 exhibit strong longitudinal morphological
+    consistency.
+-   Track 10 consists of multiple coherent local regimes separated by
+    genuine morphological transitions.
+
+This indicates that Track 10's unusual behavior cannot be attributed
+solely to baseline estimation artifacts.
+
