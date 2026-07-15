@@ -42,7 +42,8 @@ The primary goal of Phase 1 was to establish the "Rosetta Stone" of the dataset:
 
 ### 3. SEM Substrate Spatial Mapping
 * **Action:** Built a spatial mapping script (`03_phase1_melt_pool_feature_extraction.ipynb`) to align Zeiss SEM substrate imagery with the thermal X-axis.
-* **Challenges Solved:** * Corrected the **reverse-coordinate scan direction** (SEM Tile 01 starts at 100mm and moves backwards to 20mm).
+* **Challenges Solved:**
+    * Corrected the **reverse-coordinate scan direction** (SEM Tile 01 starts at 100mm and moves backwards to 20mm).
     * Implemented **dynamic step-size calculation** based on file counts (e.g., 100mm / 13 or 14 tiles = ~7.1 to 7.6 mm Field of View).
     * Resolved a missing file anomaly for Track 14 caused by a local naming error.
 * **Methodology:** Masked out the central 30% processed track to isolate pure, unannotated substrate. Extracted local pixel variance as a proxy for **substrate roughness**.
