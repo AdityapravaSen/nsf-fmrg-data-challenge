@@ -19,39 +19,50 @@
 
 This is the "Rosetta stone" — get it right once, both of you build on it.
 
-### Step-by-step
-#### 1. Validate laser on/off detection (sanity check, ~30 min)
+# Phase 1 Progress Report: Data Understanding & Alignment
+**Branch:** `Adi` | **Focus:** Thermal & SEM Modality Alignment
 
-* Run detect_laser_on_interval on all 4 tracks, plot score vs frame index with the threshold line and the detected on_start/on_stop marked.
-* Confirm visually: does the detected window actually correspond to the laser being on? Check 1-2 raw frames just before/after the boundary.
-* Flag any track where detection looks wrong — better to catch this now than 3 weeks in.
+## 🎯 Phase Objective
+The primary goal of Phase 1 was to establish the "Rosetta Stone" of the dataset: a strictly aligned, common physical X-axis (20.1 mm to 99.9 mm) that unifies the disparate temporal and spatial resolutions of the thermal camera and the SEM imagery. This foundational alignment is required before any machine learning models can map thermal features to final track geometry (Phase 2+).
 
-#### 2. Build melt-pool descriptors per frame (this is Goal 1 of the actual challenge)
-For each of the 400 extracted thermal frames per track, compute:
+---
 
-* melt pool region (threshold-based segmentation — pick a temperature/intensity cutoff, or Otsu)
-* size (pixel area → mm²), centroid, major/minor axis length (shape/aspect ratio)
-* peak temperature, mean temperature in pool, temperature gradient at pool boundary
-* asymmetry (e.g. compare leading vs trailing half of pool relative to scan direction)
-* cooling-tail length (how far behind the pool centroid does intensity stay elevated above background)
-* frame-to-frame change (Δcentroid position, Δsize) — this doubles as a scan-speed/consistency check: does centroid step size match the expected 0.2mm/frame?
+## ✅ Key Achievements & Steps Completed
 
->This produces a per-frame feature vector — this is the actual thermal descriptor table the model will eventually consume, not just raw frames.
+### 1. Laser On/Off Validation & Frame Extraction
+* **Action:** Ran adaptive thresholding (`detect_laser_on_interval`) on global frame intensities (99.5th percentile) for Tracks 8, 10, 14, and 21.
+* **Validation:** Successfully isolated exactly **400 active frames** per track. 
+* **Physics Check:** At a travel speed of 10 mm/s (0.2 mm/frame), 400 frames perfectly equate to the required **80 mm active window** (spanning from ~20.1 mm to ~99.9 mm).
 
-#### 3. SEM tile → x-position mapping + substrate feature extraction
+### 2. Melt-Pool Feature Engineering (Challenge Goal 1)
+* **Action:** Built a processing pipeline (`03_phase1_melt_pool_feature_extraction.ipynb`) using `skimage` to segment the melt pool per frame.
+* **Methodology:** Applied **Otsu's thresholding** to clean, non-zero pixel arrays to dynamically segment the melt pool from the substrate.
+* **Features Extracted:** Area (pixels), Centroid (X, Y), Major Axis Length, Minor Axis Width, Peak Temperature, and Mean Region Temperature.
+* **Key Insight:** Analyzed centroid shifts and confirmed that the Stratonics thermal camera is mounted **co-axially**. The melt pool remains relatively stationary near the center of the 400x400 frame while the substrate moves beneath it.
 
-* Map each SEM tile to its physical x-range (remember: tile 01 = 100mm side, so reverse-numbered vs. thermal/height convention — need to flip to match common x-axis direction)
-* Since tiles are coarser resolution than the 400 thermal frames, decide the binning: which SEM tile(s) correspond to which thermal-frame x-range
-* Extract substrate-only texture features from each tile (excluding processed track region — you'll need a way to identify that region, e.g. a fixed exclusion band, or intensity-based segmentation if the track is visually distinct in SEM)
-* Candidate substrate features: local roughness/texture (e.g. GLCM contrast, local standard deviation), porosity-like defects, grain pattern irregularity — these become the "substrate condition" side of Goal 4
+### 3. SEM Substrate Spatial Mapping
+* **Action:** Built a spatial mapping script (`04_sem_feature_extraction.ipynb`) to align Zeiss SEM substrate imagery with the thermal X-axis.
+* **Challenges Solved:** * Corrected the **reverse-coordinate scan direction** (SEM Tile 01 starts at 100mm and moves backwards to 20mm).
+    * Implemented **dynamic step-size calculation** based on file counts (e.g., 100mm / 13 or 14 tiles = ~7.1 to 7.6 mm Field of View).
+    * Resolved a missing file anomaly for Track 14 caused by a local naming error.
+* **Methodology:** Masked out the central 30% processed track to isolate pure, unannotated substrate. Extracted local pixel variance as a proxy for **substrate roughness**.
 
-#### 4. Unify onto common x-grid
+### 4. Modality Unification (The Rosetta Stone)
+* **Action:** Merged the high-resolution Thermal data (0.2 mm steps) with the coarse-resolution SEM data (~7.5 mm steps).
+* **Methodology:** Utilized `pandas.merge_asof` (Nearest Neighbor Interpolation) sorted strictly by `x_position_mm` to staple the nearest valid SEM substrate roughness value to every single thermal frame without distorting physical truth.
 
-* Pick a common x-grid resolution (probably the thermal frame resolution, ~0.2mm steps, since it's the finest of the three)
-* For each x-bin: thermal frame(s) + interpolated/nearest SEM tile features
-* Output as one clean data structure (I'd suggest a pandas DataFrame or a saved .npz/.parquet per track — Person B's height-map targets will get merged onto this same x-grid in Phase 2)
+### 5. Visual Quality Control (QC)
+* **Action:** Generated twin-axis validation plots comparing Continuous Thermal Melt Pool Area alongside Binned/Stepped SEM Substrate Roughness over the shared 20mm -> 100mm X-axis.
+* **Result:** Confirmed perfect spatial bounds and signal alignment.
 
-#### 5. Visual QC (non-negotiable before merging)
+---
 
-* Plot: thermal melt-pool centroid trajectory overlaid on x-position, peak temp vs x, SEM substrate roughness vs x — for all 4 tracks, side by side
-* This is what you show your friend before merging into main — "here's proof the alignment holds"
+## 📁 Artifacts Generated
+All scripts executed successfully, producing the following assets in `data/processed/`:
+1. `phase1_thermal_features.csv` *(1,600 rows: 4 tracks x 400 frames)*
+2. `phase1_sem_features.csv` *(Coarse physical bounds and midpoint mapping)*
+3. `phase1_unified_master.csv` *(The final, merged foundational dataset)*
+
+## 🚀 Next Steps (Handoff to Phase 2)
+The unified dataset is ready for **Nabarun**. 
+**Phase 2 Goal:** Load the Bruker/Wyko height-map arrays, slice them at these exact `x_position_mm` anchors, compute the final geometric target variables (local track width, boundary irregularity), and append them directly to `phase1_unified_master.csv`.
