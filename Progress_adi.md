@@ -64,7 +64,7 @@ All scripts executed successfully, producing the following assets in `/processed
 2. `phase1_sem_features.csv` *(Coarse physical bounds and midpoint mapping)*
 3. `phase1_unified_master.csv` *(The final, merged foundational dataset)*
 
-![graph](https://postimg.cc/tsvb27b3)
+[![download.png](https://i.postimg.cc/JhMh7Bd2/download.png)](https://postimg.cc/tsvb27b3)
 
 ## 🚀 Next Steps (Handoff to Phase 2)
 The unified dataset is ready for **Nabarun**. 
