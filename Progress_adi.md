@@ -59,12 +59,12 @@ The primary goal of Phase 1 was to establish the "Rosetta Stone" of the dataset:
 ---
 
 ## 📁 Artifacts Generated
-All scripts executed successfully, producing the following assets in `data/processed/`:
+All scripts executed successfully, producing the following assets in `/processed_data/`:
 1. `phase1_thermal_features.csv` *(1,600 rows: 4 tracks x 400 frames)*
 2. `phase1_sem_features.csv` *(Coarse physical bounds and midpoint mapping)*
 3. `phase1_unified_master.csv` *(The final, merged foundational dataset)*
 
-<img src="1VAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjEwLjcsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvTLEjVAAAAAlwSFlzAAAPYQAAD2EBqD" alt="" style="display: inline-block; height: 1.25rem; width: auto; vertical-align: text-bottom; margin: 0 0.25rem;" />
+![graph](https://postimg.cc/tsvb27b3)
 
 ## 🚀 Next Steps (Handoff to Phase 2)
 The unified dataset is ready for **Nabarun**. 
