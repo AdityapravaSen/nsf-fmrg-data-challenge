@@ -64,6 +64,8 @@ All scripts executed successfully, producing the following assets in `data/proce
 2. `phase1_sem_features.csv` *(Coarse physical bounds and midpoint mapping)*
 3. `phase1_unified_master.csv` *(The final, merged foundational dataset)*
 
+<img src="1VAAAAOnRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjEwLjcsIGh0dHBzOi8vbWF0cGxvdGxpYi5vcmcvTLEjVAAAAAlwSFlzAAAPYQAAD2EBqD" alt="" style="display: inline-block; height: 1.25rem; width: auto; vertical-align: text-bottom; margin: 0 0.25rem;" />
+
 ## 🚀 Next Steps (Handoff to Phase 2)
 The unified dataset is ready for **Nabarun**. 
 **Phase 2 Goal:** Load the Bruker/Wyko height-map arrays, slice them at these exact `x_position_mm` anchors, compute the final geometric target variables (local track width, boundary irregularity), and append them directly to `phase1_unified_master.csv`.
