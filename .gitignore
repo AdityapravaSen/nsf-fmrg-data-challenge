@@ -12,6 +12,7 @@ data/raw/**/*.asc
 processed_data/
 *.mp4
 *.gif
+*.csv
 
 # Keep folder placeholders
 !data/raw/**/.gitkeep
