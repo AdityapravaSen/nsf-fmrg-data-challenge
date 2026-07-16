@@ -7,13 +7,13 @@
 **Development tracks:** 8, 10, 14\
 **Sealed track:** 21 --- do not load or inspect during method
 development\
-**Last completed major experiment:** Experiment 10 --- Geometry
-descriptor requirements audit\
-**Current scientific status:** Experiments 03--10 completed (Track 21
+**Last completed major experiment:** Experiment 12 --- geometry
+descriptor implementation\
+**Current scientific status:** Experiments 03--12 completed (Track 21
 remains sealed)\
-**Current project phase:** Phase II --- Geometry representation design\
-**Next planned experiment:** Experiment 11 --- Geometry descriptor
-implementation comparison
+**Current project phase:** Phase II --- descriptor implementation\
+**Current focus:** Transition from descriptor evaluation to descriptor
+implementation and dataset integration
 
 ------------------------------------------------------------------------
 
@@ -1431,6 +1431,10 @@ Future work will compare candidate descriptor implementations against
 the requirements established in Experiment 10 before any machine-
 learning model is developed.
 
+The next objective is to integrate the geometry descriptor tables with
+the aligned thermal/SEM dataset and begin multimodal predictive
+modeling.
+
 Track 21 remains sealed.
 
 ------------------------------------------------------------------------
@@ -2132,5 +2136,106 @@ Instead,
 
 This indicates that Track 10's unusual behavior cannot be attributed
 solely to baseline estimation artifacts.
+
+------------------------------------------------------------------------
+
+# Experiment 11 --- PCA representation evaluation
+
+## Purpose
+
+Experiment 11 evaluated PCA only as a representation for the
+offset- and amplitude-normalized cross-sectional shape component.
+
+The goal was not to define the complete geometry descriptor, but to
+determine whether PCA preserves the longitudinal morphology discovered
+in Experiment 09 while providing a compact representation.
+
+## Major findings
+
+-   Approximately 71.5% of the variance is explained by PC1.
+-   Approximately 83.4% is explained by the first two PCs.
+-   About 90% is explained by six PCs.
+-   Five PCs were chosen as a practical descriptor compromise.
+-   Reconstruction error decreases smoothly as more PCs are retained.
+-   Track 10 low-coherence regimes remain distinguishable after
+    reconstruction.
+
+PCA preserves normalized shape but intentionally removes amplitude and
+vertical offset by construction.
+
+Therefore amplitude, signed elevation, finite-support validity, and
+regime metadata remain companion descriptor fields.
+
+## Scientific conclusion
+
+PCA is accepted as the normalized shape representation but not as the
+complete geometry descriptor.
+
+------------------------------------------------------------------------
+
+# Experiment 12 --- geometry descriptor implementation
+
+## Purpose
+
+Experiment 12 transitioned from descriptor definition and evaluation
+into implementation.
+
+The descriptor definition from Experiment 10 and the PCA decision from
+Experiment 11 were frozen.
+
+Geometry descriptors are evaluated at Adi's thermal-frame anchor
+positions taken from:
+
+`processed_data/phase1_unified_master.csv`
+
+## Implementation
+
+The reusable API:
+
+`extract_geometry_descriptor(track_id, x_position_mm)`
+
+was implemented.
+
+The descriptor now returns:
+
+-   PC1--PC5
+-   amplitude
+-   signed elevation
+-   eligibility
+-   nonflat flag
+-   regime ID
+
+along with validity metadata.
+
+Descriptors are evaluated only at the thermal x positions.
+
+One descriptor row exists for every thermal anchor.
+
+Explicit NaNs are preserved.
+
+No interpolation is performed.
+
+Track 21 remains sealed.
+
+One shared configuration is used across Tracks 8, 10, and 14.
+
+The implementation generated:
+
+-   `geometry_descriptors_track_8.csv`
+-   `geometry_descriptors_track_10.csv`
+-   `geometry_descriptors_track_14.csv`
+
+## Scientific significance
+
+The project has now moved from asking:
+
+> "What should the geometry descriptor be?"
+
+to:
+
+> "Producing the descriptor at every aligned thermal observation."
+
+This is the first implementation-ready representation that can be merged
+with thermal and SEM features for multimodal learning.
 
 Experiment 11 concluded that PCA is an appropriate representation for the normalized cross-sectional shape component. Five principal components preserve the dominant bead geometry while maintaining distinct Track 10 low-coherence regimes. PCA alone is insufficient as a complete descriptor because amplitude, signed elevation, and validity metadata are intentionally excluded by normalization and must be retained as companion descriptor components.
