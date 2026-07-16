@@ -7,13 +7,13 @@
 **Development tracks:** 8, 10, 14\
 **Sealed track:** 21 --- do not load or inspect during method
 development\
-**Last completed major experiment:** Experiment 12 --- geometry
-descriptor implementation\
-**Current scientific status:** Experiments 03--12 completed (Track 21
+**Last completed major experiment:** Experiment 14 --- Phase 2
+merge-point validation\
+**Current scientific status:** Experiments 03--14 completed (Track 21
 remains sealed)\
-**Current project phase:** Phase II --- descriptor implementation\
-**Current focus:** Transition from descriptor evaluation to descriptor
-implementation and dataset integration
+**Current project phase:** Phase II completed\
+**Current focus:** Preparing for Phase III multimodal predictive
+modeling
 
 ------------------------------------------------------------------------
 
@@ -48,8 +48,8 @@ Goals:
 
 • Establish descriptor requirements
 
-## Phase II (Current) --- geometry representation design (Experiments
-11+)
+## Phase II (Completed) --- geometry representation design (Experiments
+11--14)
 
 Goals:
 
@@ -57,7 +57,7 @@ Goals:
 
 • Select a physically meaningful prediction target
 
-## Phase III (Future) --- multimodal learning
+## Phase III (Future) --- multimodal predictive modeling
 
 Goals:
 
@@ -1416,26 +1416,18 @@ source of prior information.
 
 # 23. Current project decision
 
-**Do not tune Experiment 05's corridor.**
+Geometry descriptor definition is frozen.
 
-**Do not perform a third parameter-tuning pass on Experiment 06.**
+Descriptor implementation is complete.
 
-**Do not yet implement a production target extractor.**
+Multimodal dataset integration is complete.
 
-The remaining challenge is no longer validating whether the observed
-morphology is real, nor optimizing another segmentation algorithm.
-
-The project now enters Phase II: Geometry Representation Design.
-
-Future work will compare candidate descriptor implementations against
-the requirements established in Experiment 10 before any machine-
-learning model is developed.
-
-The next objective is to integrate the geometry descriptor tables with
-the aligned thermal/SEM dataset and begin multimodal predictive
-modeling.
+Phase II validation is complete.
 
 Track 21 remains sealed.
+
+The next phase of the project is baseline multimodal predictive modeling
+using the frozen dataset.
 
 ------------------------------------------------------------------------
 
@@ -1758,10 +1750,15 @@ as clean ground-truth evidence that one boundary definition is superior.
 
 # 28. Immediate next step and update checklist
 
-Formulate and evaluate candidate local geometry descriptors
-(Experiment 10), comparing scalar and vector-valued representations that
-preserve longitudinal morphology while remaining compatible with
-downstream predictive modeling.
+**Phase III --- Baseline multimodal predictive modeling**
+
+Objectives:
+
+- design the baseline prediction experiment,
+- define feature and target sets,
+- establish preprocessing,
+- evaluate on held-out Track 21,
+- compare baseline machine-learning models.
 
 ------------------------------------------------------------------------
 
@@ -2239,3 +2236,140 @@ This is the first implementation-ready representation that can be merged
 with thermal and SEM features for multimodal learning.
 
 Experiment 11 concluded that PCA is an appropriate representation for the normalized cross-sectional shape component. Five principal components preserve the dominant bead geometry while maintaining distinct Track 10 low-coherence regimes. PCA alone is insufficient as a complete descriptor because amplitude, signed elevation, and validity metadata are intentionally excluded by normalization and must be retained as companion descriptor components.
+
+------------------------------------------------------------------------
+
+# Experiment 13 --- merge geometry descriptors
+
+## Purpose
+
+Experiment 13 integrated the frozen geometry descriptors produced in
+Experiment 12 into the aligned multimodal master table at the thermal
+anchor grid.
+
+This experiment is strictly a dataset-integration step:
+
+- the Experiment 12 descriptor definition is not modified;
+- descriptors are merged, not recomputed;
+- Track 21 remains sealed (no Track 21 descriptor file is read,
+    generated, or inspected).
+
+## Files created
+
+- `scripts/13_merge_geometry_descriptors.py`
+- `processed_data/final_multimodal_dataset.csv`
+- `processed_data/merge_validation_summary.json`
+- `processed_data/descriptor_merge_statistics.csv`
+
+## Execution
+
+Executed with:
+
+`/opt/homebrew/opt/python@3.11/bin/python3.11 scripts/13_merge_geometry_descriptors.py`
+
+Execution status: **successful**.
+
+## Validation results
+
+- Rows before merge: **1600**
+- Rows after merge: **1600**
+- Duplicate join-key rows after merge: **0**
+- One-to-one merge validation: **passed** for Tracks 8, 10, and 14
+- Tracks 8/10/14 descriptor anchors matched exactly once.
+- Track 21 master rows were preserved unmodified, with descriptor fields
+    remaining **NaN** (no Track 21 descriptors merged).
+
+## Descriptor fields added
+
+The merged dataset appends geometry descriptor fields including:
+
+- normalized shape: **PC1--PC5**
+- local amplitude: **amplitude**
+- signed elevation: **signed elevation**
+- validity and readiness flags (eligibility / nonflat / PCA-ready and
+    related finite-support and baseline-support metadata)
+- regime metadata (regime identifier)
+
+## Scientific meaning
+
+The geometry descriptor has now been integrated into the multimodal
+dataset at the thermal anchor grid. The project can transition from
+descriptor construction to merged-dataset validation.
+
+------------------------------------------------------------------------
+
+# Experiment 14 --- Phase 2 merge-point validation
+
+## Purpose
+
+Experiment 14 validated the completed multimodal dataset after geometry
+descriptor integration.
+
+The purpose was **not** to modify descriptor extraction or redefine the
+geometry descriptor.
+
+Instead, the experiment verified that the merged dataset satisfies the
+Phase II requirements before any machine-learning models are developed.
+
+## Implementation
+
+Validation was performed using:
+
+`scripts/14_phase2_merge_point_validation.py`
+
+The validation:
+
+- inspected only Tracks 8, 10 and 14,
+- preserved the sealed Track 21 protocol,
+- generated validation plots,
+- checked anchor alignment,
+- verified descriptor coverage,
+- verified merge correctness.
+
+The experiment intentionally did **not** modify descriptor extraction or
+geometry definitions.
+
+## Validation performed
+
+The script verified:
+
+- exactly 400 rows for each development track,
+- anchor alignment with `phase1_unified_master.csv`,
+- zero duplicate join keys,
+- zero unexpected descriptor rows,
+- one-to-one merge correctness,
+- descriptor validity statistics,
+- descriptor NaN patterns,
+- preservation of Track 21 as a sealed evaluation track.
+
+## Generated outputs
+
+The run produced a timestamped run-output directory containing a
+validation summary JSON, an anchor-alignment report, and per-track
+validation plots.
+
+## Major findings
+
+- anchor alignment passed with zero x-position mismatch,
+- exactly one descriptor row exists per thermal anchor,
+- Track 21 remained untouched,
+- descriptor validity patterns are consistent with Experiment 12
+    eligibility rules,
+- Track 10's previously identified low-coherence regime remains visible
+    within approximately 78--97 mm,
+- no integration inconsistencies were identified.
+
+## Scientific significance
+
+Experiment 14 completes Phase II.
+
+The project now possesses:
+
+- aligned thermal features,
+- aligned SEM features,
+- aligned geometry descriptors,
+- one merged multimodal dataset,
+- validated anchor alignment.
+
+The project is now ready to transition into multimodal predictive
+modeling.
