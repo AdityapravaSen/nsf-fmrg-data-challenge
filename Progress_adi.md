@@ -69,3 +69,32 @@ All scripts executed successfully, producing the following assets in `/processed
 ## 🚀 Next Steps (Handoff to Phase 2)
 The unified dataset is ready for **Nabarun**. 
 **Phase 2 Goal:** Load the Bruker/Wyko height-map arrays, slice them at these exact `x_position_mm` anchors, compute the final geometric target variables (local track width, boundary irregularity), and append them directly to `phase1_unified_master.csv`.
+
+# Progress Log: Feature Engineering & Data Alignment (Person A / Adi)
+
+**Role:** Thermal & SEM Feature Engineering, Data Preprocessing, Model Input Pipeline  
+**Current Phase:** Phase III (Predictive Modeling - Feature Pipeline Complete)  
+**Sealed Track Policy:** Track 21 is strictly held out.  
+
+---
+
+*The goal of the current phase is to prepare the structured data for Deep Learning models. Following the strict division of labor, I own the feature inputs ($X$), while Person B owns the targets ($Y$).*
+
+**1. Schema Definition & Filtering:**
+* Defined the strict input schema (7 thermal features, 2 SEM features).
+* Implemented a filter to dynamically drop rows where `pca_ready == False`, ensuring the model only trains on physically valid geometry regions.
+
+**2. Leakage-Proof Scaling:**
+* Built the `FeaturePreprocessor` class with a custom Scikit-Learn `StandardScaler`.
+* **Crucial Rule Maintained:** Implemented Leave-One-Track-Out (LOTO) splitting. The scaler is fitted *only* on the training tracks (e.g., 8 and 10) and safely transformed the validation track (14) to completely prevent spatial data leakage. 
+
+**3. Thermal History Windowing:**
+* Heat diffuses and builds up over time. I wrote a transformation method `create_sequence_windows` to convert the flat tabular data into 3D sequential arrays.
+* The feature data is now formatted as `(Samples, Window_Size, Features)` (e.g., Shape: `423, 5, 9`), making it natively compatible with PyTorch 1D-CNNs and LSTMs.
+
+---
+
+## 🚀 Immediate Next Steps / Blockers
+* **Handoff to Person B:** I have generated a `meta_df` alongside my 3D windowed arrays. This dataframe contains the exact `track_id` and `x_position_mm` of the *last* frame in every sequence window.
+* **Waiting on Target Extraction:** Person B will use my `meta_df` to slice and align the target variables ($Y$). 
+* **Joint Task:** Once Person B pushes the target extraction script, we will combine our tensors into a PyTorch `DataLoader` and begin training the baseline models.
