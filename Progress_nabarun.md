@@ -2583,3 +2583,42 @@ reporting protocol are frozen.
 
 The project is now ready to begin baseline multimodal model development
 using aligned feature sequences and aligned geometry-target arrays.
+
+## Phase III Baseline Modeling Results
+
+The first Phase III baseline modeling scripts have now been executed
+using the frozen feature preprocessing, target alignment, and metric
+infrastructure.
+
+These experiments predict the PCA shape target group (`pc1`--`pc5`) from
+flattened rolling feature windows. The validation split is held-out Track
+14, with Tracks 8 and 10 used for training.
+
+No hyperparameter tuning, model persistence, plotting, or Track 21
+evaluation was performed.
+
+Validation metrics are summarized below.
+
+| Experiment | Feature group | MAE | RMSE | Median AE | R² |
+|---|---|---:|---:|---:|---:|
+| Linear Regression | Thermal-only | 2.535383 | 2.924938 | 2.407038 | -6.554562 |
+| Linear Regression | SEM-only | 0.936175 | 1.206902 | 0.722373 | -0.152840 |
+| Linear Regression | Thermal + SEM | 2.464486 | 2.863417 | 2.381854 | -7.072938 |
+| Ridge Regression (`alpha=1.0`) | Thermal-only | 2.024324 | 2.383099 | 1.963877 | -2.268337 |
+| Ridge Regression (`alpha=1.0`) | SEM-only | 0.935437 | 1.205774 | 0.722716 | -0.149425 |
+| Ridge Regression (`alpha=1.0`) | Thermal + SEM | 2.069955 | 2.428553 | 2.007077 | -2.437421 |
+| Random Forest Regression | Thermal-only | 1.892585 | 2.115979 | 1.821794 | -1.635473 |
+| Random Forest Regression | SEM-only | 1.314589 | 1.664540 | 1.135141 | -0.848344 |
+| Random Forest Regression | Thermal + SEM | 1.427145 | 1.747150 | 1.245874 | -0.946050 |
+
+The Random Forest baseline used:
+
+- `n_estimators = 300`
+- `min_samples_leaf = 2`
+- `random_state = 42`
+
+The current results are descriptive baseline results only. They validate
+that the full Phase III predictive modeling path runs end-to-end for
+linear, regularized linear, and nonlinear tree-based regressors.
+
+Track 21 remains sealed.
