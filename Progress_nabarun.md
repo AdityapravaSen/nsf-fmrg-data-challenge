@@ -11,9 +11,8 @@ development\
 merge-point validation\
 **Current scientific status:** Experiments 03--14 completed (Track 21
 remains sealed)\
-**Current project phase:** Phase II completed\
-**Current focus:** Preparing for Phase III multimodal predictive
-modeling
+**Current project phase:** Phase III engineering infrastructure completed\
+**Current focus:** Ready for baseline multimodal model development
 
 ------------------------------------------------------------------------
 
@@ -57,7 +56,7 @@ Goals:
 
 • Select a physically meaningful prediction target
 
-## Phase III (Future) --- multimodal predictive modeling
+## Phase III (Current) --- multimodal predictive modeling
 
 Goals:
 
@@ -1752,11 +1751,18 @@ as clean ground-truth evidence that one boundary definition is superior.
 
 **Phase III --- Baseline multimodal predictive modeling**
 
-Objectives:
+Current status:
+
+- Phase III feature preprocessing is implemented.
+- Phase III target alignment is implemented.
+- The feature/target metadata contract is established.
+- The project is ready for baseline model integration.
+
+Immediate objectives:
 
 - design the baseline prediction experiment,
-- define feature and target sets,
-- establish preprocessing,
+- combine aligned feature sequences and target arrays,
+- run track-aware development validation on Tracks 8, 10, and 14,
 - evaluate on held-out Track 21,
 - compare baseline machine-learning models.
 
@@ -2373,3 +2379,206 @@ The project now possesses:
 
 The project is now ready to transition into multimodal predictive
 modeling.
+
+------------------------------------------------------------------------
+
+# Phase III Engineering Infrastructure
+
+## Purpose
+
+After Experiment 14, the project transitioned from geometry-target
+engineering into Phase III multimodal predictive modeling.
+
+This section records engineering infrastructure built on the frozen
+scientific decisions from Experiments 03--14. It does **not** introduce a
+new geometry experiment, modify the descriptor definition, recompute
+descriptors, or reopen any Phase I/II scientific conclusions.
+
+Track 21 remains sealed.
+
+## Collaboration split
+
+Person A owns the feature-side Phase III pipeline.
+
+Person B owns the target-side Phase III pipeline.
+
+The two workstreams intentionally communicate only through row identity
+metadata:
+
+- `track_id`
+- `frame_index`
+- `x_position_mm`
+
+The metadata corresponds to the final frame of each rolling feature
+window. Its row order defines the canonical Phase III sample order.
+
+## Person A feature preprocessing pipeline
+
+Person A completed a reusable feature preprocessing pipeline implemented
+in:
+
+`scripts/phase3_data_loader.py`
+
+The pipeline:
+
+- loads thermal and SEM feature columns from
+    `processed_data/final_multimodal_dataset.csv`;
+- filters to physically valid PCA-ready rows for the current sequence
+    modeling workflow;
+- standardizes feature columns using the training split only;
+- applies the fitted scaler to validation data without refitting;
+- constructs rolling temporal feature windows;
+- returns NumPy feature arrays and metadata tables.
+
+The primary outputs are:
+
+- `X_train_seq`
+- `X_val_seq`
+- `train_meta`
+- `val_meta`
+
+The feature arrays have shape:
+
+`(samples, window_size, features)`
+
+The metadata tables preserve the canonical row identity of the target
+frame for each feature window.
+
+## Person B target-alignment module
+
+Person B implemented the reusable Phase III target-alignment module in:
+
+`src/ml/targets.py`
+
+The public class is:
+
+`Phase3TargetAligner`
+
+This module is strictly an alignment utility. It does not:
+
+- recompute descriptors;
+- redesign geometry;
+- recreate rolling windows;
+- perform feature engineering;
+- modify `processed_data/final_multimodal_dataset.csv`;
+- import PyTorch or create data loaders.
+
+The module consumes `train_meta` or `val_meta`, performs an exact
+one-to-one merge against:
+
+`processed_data/final_multimodal_dataset.csv`
+
+and returns NumPy target arrays.
+
+Supported target groups in the initial implementation are:
+
+- PCA shape: `pc1`--`pc5`;
+- amplitude: `amplitude_um`;
+- signed elevation: `signed_elevation_um`.
+
+The join keys are exactly:
+
+- `track_id`
+- `frame_index`
+- `x_position_mm`
+
+No nearest-neighbor matching, `merge_asof`, interpolation, or target
+filling is performed.
+
+## Alignment validation
+
+Validation was performed using:
+
+`scripts/15_phase3_target_alignment_validation.py`
+
+Execution used the repository-standard interpreter:
+
+`/opt/homebrew/opt/python@3.11/bin/python3.11 scripts/15_phase3_target_alignment_validation.py`
+
+Execution status: **successful**.
+
+The validation confirmed that the target-alignment module:
+
+- loads the frozen multimodal dataset;
+- validates the dataset schema;
+- validates metadata schema;
+- rejects ambiguous duplicate metadata rows;
+- performs exact one-to-one joins;
+- preserves row count;
+- preserves metadata ordering;
+- returns NumPy arrays;
+- keeps target alignment independent from PyTorch.
+
+Training outputs:
+
+- `X_train_seq`: `(423, 5, 9)`
+- `train_meta`: 423 rows
+- `Y_train` for PCA shape: `(423, 5)`
+
+Validation outputs:
+
+- `X_val_seq`: `(175, 5, 9)`
+- `val_meta`: 175 rows
+- `Y_val` for PCA shape: `(175, 5)`
+
+Amplitude and signed elevation also aligned successfully.
+
+All supported target groups produced zero target NaNs in the validated
+feature-window metadata.
+
+The metadata ordering was preserved exactly.
+
+## Engineering milestones
+
+- Phase III feature preprocessing frozen.
+- Phase III target alignment frozen.
+- Feature/target metadata contract established.
+- NumPy interface finalized.
+- Ready for baseline model integration.
+
+## Architecture established
+
+The Phase III engineering interface is now:
+
+```text
+FeaturePreprocessor
+    |
+    v
+X_train_seq
+train_meta
+
+    |
+
+Phase3TargetAligner
+
+    |
+    v
+
+Y_train
+```
+
+The two modules intentionally remain independent. Neither module imports
+the other. Their only shared contract is the metadata table containing:
+
+- `track_id`
+- `frame_index`
+- `x_position_mm`
+
+This preserves the scientific separation between input-side feature
+preprocessing and target-side descriptor alignment.
+
+## Current interpretation
+
+This work is engineering infrastructure, not a new scientific
+experiment.
+
+The geometry descriptor remains unchanged.
+
+The frozen descriptor implementation and merge validation from
+Experiments 12--14 remain the scientific basis for Phase III modeling.
+
+Track 21 remains sealed until the full baseline modeling pipeline and
+reporting protocol are frozen.
+
+The project is now ready to begin baseline multimodal model development
+using aligned feature sequences and aligned geometry-target arrays.
