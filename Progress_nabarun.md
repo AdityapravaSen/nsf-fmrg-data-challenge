@@ -2530,8 +2530,8 @@ The metadata ordering was preserved exactly.
 
 ## Engineering milestones
 
-- Phase III feature preprocessing frozen.
-- Phase III target alignment frozen.
+- Phase III feature preprocessing interface established.
+- Phase III target-alignment interface established.
 - Feature/target metadata contract established.
 - NumPy interface finalized.
 - Ready for baseline model integration.
@@ -2555,6 +2555,7 @@ Phase3TargetAligner
     v
 
 Y_train
+Y_val
 ```
 
 The two modules intentionally remain independent. Neither module imports
