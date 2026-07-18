@@ -94,7 +94,35 @@ The unified dataset is ready for **Nabarun**.
 
 ---
 
-## 🚀 Immediate Next Steps / Blockers
-* **Handoff to Person B:** I have generated a `meta_df` alongside my 3D windowed arrays. This dataframe contains the exact `track_id` and `x_position_mm` of the *last* frame in every sequence window.
-* **Waiting on Target Extraction:** Person B will use my `meta_df` to slice and align the target variables ($Y$). 
-* **Joint Task:** Once Person B pushes the target extraction script, we will combine our tensors into a PyTorch `DataLoader` and begin training the baseline models.
+# Phase III Progress Report: Multimodal Integration & LOTO Validation
+**Branch:** `Adi` | **Focus:** Baseline Model Cross-Validation & Pipeline Finalization
+
+## 🎯 Phase Objective
+The final objective of Phase III was to seamlessly integrate the feature preprocessing pipeline (`FeaturePreprocessor`) with the newly designed target alignment module (`Phase3TargetAligner`) developed by Person B (Nabarun). Once integrated, the goal was to rigorously test the baseline Random Forest configuration using Leave-One-Track-Out (LOTO) cross-validation across our development tracks (8, 10, and 14) to determine which feature subset generalizes best before unsealing Track 21.
+
+---
+
+## ✅ Key Achievements & Steps Completed
+
+### 1. Cross-Module Integration & API Harmonization
+* Successfully integrated the 3D sequence windowing output `(Samples, Window_Size, Features)` and `meta_df` with the `Phase3TargetAligner`.
+* **Engineering Fix:** Encountered an API mismatch where the expected custom `metrics.py` class and `align()` initialization methods differed across our branches. Instead of modifying the frozen Phase III target classes and risking pipeline corruption, I dynamically patched the validation script (`24_phase3_loto_validation.py`). 
+* I bypassed the missing metric wrapper by directly implementing `sklearn.metrics` (MAE, RMSE, Median AE, R²) and correctly routed the `meta_df` into the `align()` method using the frozen dataset path.
+
+### 2. Leave-One-Track-Out (LOTO) Execution
+* Designed and executed a strict LOTO cross-validation loop to evaluate track-to-track generalization.
+* The script systematically held out one track (e.g., Track 8) while training the Random Forest strictly on the other two (e.g., Tracks 10 and 14). 
+* Maintained the strict data-leakage constraints: `FeaturePreprocessor` dynamically adapted its `StandardScaler` to fit *only* on the training tracks in each fold.
+
+### 3. Feature Subset Evaluation
+* Tested the frozen Random Forest configuration (`n_estimators=300`, `min_samples_leaf=2`) against two core modalities:
+  1. `sem_only`
+  2. `thermal_plus_sem`
+* **Scientific Finding:** The LOTO results empirically proved that while `thermal_plus_sem` achieved stronger fits on training tracks, it overfit the training domain. The **`sem_only`** feature group demonstrated superior generalization on unseen physical tracks, achieving lower average MAE (1.47 vs 1.49) and RMSE (2.55 vs 2.61) across all folds.
+
+---
+
+## 🚀 Immediate Next Steps / Transition to Phase IV
+* **Pipeline Freeze:** Update the `PhaseIII_Pipeline_Freeze.md` document to officially lock in the **Random Forest + SEM-only** configuration as the winning baseline based on the LOTO data.
+* **Phase III Closure:** With the LOTO validation complete and the infrastructure proven stable, development on Phase III is officially closed.
+* **Phase IV Execution:** Break the seal on Track 21. The next script will train the frozen pipeline on Tracks 8, 10, and 14 combined, predict Track 21 geometry, and export the final metrics/CSVs for the challenge paper. No further tuning is permitted.

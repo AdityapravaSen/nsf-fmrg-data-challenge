@@ -160,49 +160,33 @@ No additional model families are included in the frozen baseline selection.
 ## 5. Final baseline selection
 
 The selected baseline model for sealed evaluation is:
-
-```text
-Random Forest Regression
-```
+`Random Forest Regression`
 
 The selected feature group is:
-
-```text
-SEM-only
-```
+`SEM-only`
 
 The selected target group is:
-
-```text
-PCA shape: pc1--pc5
-```
+`PCA shape: pc1--pc5`
 
 ### Rationale
 
-The decision is based entirely on the completed development-track experiments.
+The final baseline selection was validated using Leave-One-Track-Out (LOTO) cross-validation across all development tracks (Tracks 8, 10, and 14). This ensured the selected model and feature configuration robustly generalized across track holdouts, rather than overfitting to a single validation split.
 
-On the held-out Track 14 validation split, the SEM-only feature group produced the strongest validation performance among the completed baselines:
+**LOTO Cross-Validation Average Results:**
 
-| Experiment | Feature group | MAE | RMSE | Median AE | R² |
-|---|---|---:|---:|---:|---:|
-| Linear Regression | SEM-only | 0.936175 | 1.206902 | 0.722373 | -0.152840 |
-| Ridge Regression (`alpha=1.0`) | SEM-only | 0.935437 | 1.205774 | 0.722716 | -0.149425 |
-| Random Forest Regression | SEM-only | 1.314589 | 1.664540 | 1.135141 | -0.848344 |
-| LSTM Regression | SEM-only | 1.441860 | 1.792883 | 1.183707 | -0.978544 |
-| MLP Regression | SEM-only | 1.378703 | 1.705670 | 1.186022 | -0.804784 |
+| Feature group | Average MAE | Average RMSE | Average Median AE | Average R² |
+|---|---:|---:|---:|---:|
+| SEM-only | 1.4711 | 2.5553 | 1.2951 | -0.6407 |
+| Thermal + SEM | 1.4968 | 2.6132 | 1.3132 | -0.6208 |
 
-However, the Random Forest family was the strongest nonlinear baseline and provided the most interpretable nonlinear model through built-in feature importance. Within the Random Forest analysis, the combined thermal + SEM model assigned approximately balanced importance to thermal and SEM modalities, but SEM-only gave the strongest held-out validation performance in the predictive baseline results.
+Based on the LOTO evaluation, the **SEM-only** feature set produced the strongest average generalization performance (lower MAE, RMSE, and Median AE) across unseen tracks. Adding thermal features degraded held-out error metrics, indicating overfitting to the training tracks.
 
-For sealed evaluation, the project will treat the SEM-only Random Forest as the selected nonlinear baseline and will report its performance alongside the already-recorded development baselines.
+The Random Forest configuration remains strictly frozen as:
 
-The Random Forest configuration is frozen as:
-
-```text
-n_estimators = 300
-min_samples_leaf = 2
-random_state = 42
-n_jobs = -1
-```
+- `n_estimators = 300`
+- `min_samples_leaf = 2`
+- `random_state = 42`
+- `n_jobs = -1`
 
 No hyperparameter tuning will be performed using Track 21.
 

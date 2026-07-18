@@ -90,3 +90,4 @@ Branch: `feature/dataset-builder` (per original Planning.md)
 - No global NaN filling or cross-gap interpolation
 - One shared configuration across tracks — no per-track tuning
 - Don't re-open the "which boundary definition is best" question — that's closed; Phase 2 is about *implementing* what Experiment 10 already specified, not re-auditing it
+
