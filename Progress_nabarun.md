@@ -11,8 +11,9 @@ development\
 merge-point validation\
 **Current scientific status:** Experiments 03--14 completed (Track 21
 remains sealed)\
-**Current project phase:** Phase III engineering infrastructure completed\
-**Current focus:** Ready for baseline multimodal model development
+**Current project phase:** Phase III baseline experimentation completed\
+**Current focus:** Final model selection, sealed Track 21 evaluation, and
+report preparation
 
 ------------------------------------------------------------------------
 
@@ -1756,15 +1757,15 @@ Current status:
 - Phase III feature preprocessing is implemented.
 - Phase III target alignment is implemented.
 - The feature/target metadata contract is established.
-- The project is ready for baseline model integration.
+- Baseline model integration and evaluation have been completed.
 
 Immediate objectives:
 
-- design the baseline prediction experiment,
-- combine aligned feature sequences and target arrays,
-- run track-aware development validation on Tracks 8, 10, and 14,
-- evaluate on held-out Track 21,
-- compare baseline machine-learning models.
+- select the final baseline model and feature set,
+- freeze the final reporting protocol,
+- evaluate on held-out Track 21 only after the final pipeline is frozen,
+- prepare publication-quality figures and tables,
+- refine the final challenge report.
 
 ------------------------------------------------------------------------
 
@@ -2610,6 +2611,12 @@ Validation metrics are summarized below.
 | Random Forest Regression | Thermal-only | 1.892585 | 2.115979 | 1.821794 | -1.635473 |
 | Random Forest Regression | SEM-only | 1.314589 | 1.664540 | 1.135141 | -0.848344 |
 | Random Forest Regression | Thermal + SEM | 1.427145 | 1.747150 | 1.245874 | -0.946050 |
+| LSTM Regression | Thermal-only | 3.093022 | 3.289154 | 3.125284 | -4.971182 |
+| LSTM Regression | SEM-only | 1.441860 | 1.792883 | 1.183707 | -0.978544 |
+| LSTM Regression | Thermal + SEM | 2.015820 | 2.293431 | 1.916156 | -1.907598 |
+| MLP Regression | Thermal-only | 5.094667 | 5.474975 | 5.015851 | -15.362952 |
+| MLP Regression | SEM-only | 1.378703 | 1.705670 | 1.186022 | -0.804784 |
+| MLP Regression | Thermal + SEM | 4.685141 | 5.155220 | 4.652672 | -13.933672 |
 
 The Random Forest baseline used:
 
@@ -2620,5 +2627,213 @@ The Random Forest baseline used:
 The current results are descriptive baseline results only. They validate
 that the full Phase III predictive modeling path runs end-to-end for
 linear, regularized linear, and nonlinear tree-based regressors.
+
+The LSTM baseline differs from the first three baselines because it uses
+the sequence windows directly rather than flattening each window into a
+single feature vector. This preserves temporal ordering within the
+five-frame window and allows the model to represent a hidden sequential
+state before predicting the five PCA shape scores.
+
+The MLP baseline completes the initial baseline set by testing nonlinear
+function approximation on the same flattened feature representation used
+by the classical models. This separates, at a baseline level, the effect
+of a generic nonlinear neural network from the tree-based partitioning
+used by the Random Forest and from the temporal-state representation used
+by the LSTM.
+
+## Random Forest Feature Importance Analysis
+
+The Random Forest baseline was inspected using the built-in impurity-based
+`feature_importances_` values from `sklearn.ensemble.RandomForestRegressor`.
+No SHAP, permutation importance, partial dependence, or additional
+interpretability framework was introduced.
+
+The analysis used the same Random Forest configuration as the baseline
+model:
+
+- `n_estimators = 300`
+- `min_samples_leaf = 2`
+- `random_state = 42`
+
+The purpose was to describe which flattened sequence-window inputs the
+Random Forest relied on most strongly, not to tune the model.
+
+Principal observations:
+
+- In the thermal-only model, the highest-ranked feature was
+    `mp_length` at timestep 2. Mean temperature, melt-pool length,
+    melt-pool area, and centroid coordinates also appeared among the
+    most important thermal features.
+- In the SEM-only model, the largest importance was assigned to
+    `substrate_mean_intensity` at timestep 0, followed by
+    `substrate_roughness_variance` at timestep 0.
+- In the combined thermal + SEM model, the top individual flattened
+    features were early SEM-context features, especially
+    `substrate_mean_intensity` and `substrate_roughness_variance` at
+    early timesteps.
+- The combined model's total impurity importance was approximately
+    balanced by modality: Thermal **50.43%**, SEM **49.57%**.
+- Temporal importance in the combined model was largest at timestep 0
+    and then distributed across the remaining window, with timestep 4
+    also contributing materially.
+
+For the combined model, the timestep-level importance totals were:
+
+| Timestep | Total importance |
+|---:|---:|
+| 0 | 0.326981 |
+| 1 | 0.202160 |
+| 2 | 0.146687 |
+| 3 | 0.123726 |
+| 4 | 0.200446 |
+
+The current scikit-learn multi-output Random Forest exposes one aggregate
+feature-importance vector for the full five-output prediction problem. It
+does not naturally separate importance by PC1--PC5 without fitting
+additional target-specific models. The current analysis therefore reports
+aggregate feature importance across the five PCA targets.
+
+These results suggest that future modeling comparisons should preserve
+the thermal-only, SEM-only, and combined feature-set structure. The
+balanced combined-modality importance also argues against discarding
+either modality before stronger validation evidence is available.
+
+## Phase III experimental progression
+
+The baseline modeling sequence was intentionally incremental.
+
+- Linear Regression established the simplest flattened-feature baseline
+    for predicting the five PCA shape targets.
+- Ridge Regression tested whether L2 regularization improved the same
+    flattened feature representation without changing the model class
+    substantially.
+- Random Forest Regression tested whether nonlinear tree-based
+    partitioning improved prediction relative to linear models.
+- The LSTM baseline tested whether preserving the five-frame temporal
+    ordering improved prediction relative to flattened-window baselines.
+- The Random Forest feature-importance analysis inspected the strongest
+    tree-based baseline using built-in impurity importances.
+- The MLP baseline tested nonlinear function approximation while using
+    the same flattened representation as the classical baselines.
+
+No experiment in this baseline sequence modified the frozen descriptor,
+the Phase III preprocessing contract, or the target-alignment contract.
+
+## Principal Phase III findings so far
+
+The completed baseline experiments support the following observations.
+
+- Ridge Regression improved over ordinary Linear Regression for all three
+    feature groups on the held-out Track 14 validation split.
+- Random Forest Regression produced the strongest overall baseline
+    validation results among the tested model families when considering
+    the best-performing feature group for each model family.
+- The Random Forest SEM-only model produced the lowest validation MAE and
+    RMSE among the completed baselines.
+- The LSTM baseline did not improve validation performance despite
+    preserving temporal ordering within the five-frame feature window.
+- The MLP baseline performed substantially worse than Random Forest for
+    thermal-only and combined feature sets, despite being a nonlinear
+    neural-network model operating on the same flattened representation.
+- Random Forest feature importance indicated that predictive information
+    is distributed across both thermal and SEM modalities in the combined
+    feature set.
+- Temporal importance in the Random Forest analysis was distributed
+    across the five-frame window rather than concentrated in a pattern
+    that strongly supports sequence modeling for the current window size.
+
+These are observations from the current development-track validation
+only. They should not be treated as final claims about Track 21.
+
+## Cross-track generalization observations
+
+The development split used Tracks 8 and 10 for training and Track 14 as
+the held-out validation track.
+
+The Random Forest baseline produced similar training performance on
+Tracks 8 and 10. For the combined thermal + SEM Random Forest model,
+the training-track metrics were nearly identical:
+
+| Track | Split | MAE | RMSE | Median AE | R² |
+|---:|---|---:|---:|---:|---:|
+| 8 | train | 0.448607 | 0.600540 | 0.340279 | 0.682730 |
+| 10 | train | 0.448670 | 0.602157 | 0.359260 | 0.729262 |
+
+Validation performance degraded substantially on Track 14:
+
+| Feature group | Track | Split | MAE | RMSE | Median AE | R² |
+|---|---:|---|---:|---:|---:|---:|
+| Thermal-only | 14 | validation | 1.892585 | 2.115979 | 1.821794 | -1.635473 |
+| SEM-only | 14 | validation | 1.314589 | 1.664540 | 1.135141 | -0.848344 |
+| Thermal + SEM | 14 | validation | 1.427145 | 1.747150 | 1.245874 | -0.946050 |
+
+Among the tested Random Forest feature groups, SEM-only features gave the
+strongest validation performance on Track 14. Thermal + SEM features gave
+the strongest training performance on Tracks 8 and 10.
+
+The current evidence therefore indicates that model fit is much stronger
+on the training tracks than on the held-out development track. This is a
+cross-track generalization observation, not a final Track 21 conclusion.
+
+## Current interpretation
+
+The baseline study indicates that nonlinear relationships are important
+for this prediction problem, but the form of nonlinearity matters.
+
+Ridge Regression improved the linear baseline, suggesting that
+regularization helped the flattened feature representation. Random Forest
+then improved substantially over the linear baselines for thermal-only
+and combined feature sets, indicating that tree-based nonlinear
+partitioning was useful for the current development split.
+
+The LSTM result does not support a claim that preserving five-frame
+temporal order improves prediction in the current setup. The MLP result
+also does not support a claim that generic nonlinear neural-network
+function approximation is sufficient to match the Random Forest baseline
+on this small development set.
+
+The SEM-only feature set produced the best held-out Track 14 validation
+metrics among the completed baselines, whereas combined thermal + SEM
+features fit the training tracks best. This suggests that SEM-derived
+substrate context is important for cross-track validation in the present
+experiments, while the combined feature set may be more susceptible to
+overfitting the development training tracks.
+
+These interpretations remain provisional until the final pipeline is
+frozen and evaluated once on Track 21.
+
+## Current Phase III project status
+
+The Phase III modeling workflow now has:
+
+- preprocessing infrastructure completed;
+- target alignment completed;
+- dataset packaging completed;
+- regression evaluation infrastructure completed;
+- baseline model experiments completed;
+- Random Forest feature-importance analysis completed.
+
+The strongest current baseline is the Random Forest family. Within that
+family, SEM-only features produced the best held-out Track 14 validation
+metrics, while the combined thermal + SEM model produced the strongest
+training-track fit.
+
+Track 21 remains intentionally sealed.
+
+## Current future work
+
+Future work should now focus on finalization rather than adding more
+model classes.
+
+Immediate next steps are:
+
+- select the final model and feature set for sealed evaluation;
+- freeze the preprocessing, target-alignment, and reporting protocol;
+- generate final Track 21 predictions only after the pipeline is frozen;
+- prepare publication-quality figures and summary tables;
+- refine the final challenge report and paper text.
+
+Additional architectures should not be added unless later diagnostics
+provide a specific scientific reason to do so.
 
 Track 21 remains sealed.
