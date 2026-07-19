@@ -159,8 +159,15 @@ No additional model families are included in the frozen baseline selection.
 
 ## 5. Final baseline selection
 
-The selected baseline model for sealed evaluation is:
+### Initial freeze candidate
+
+The initial freeze candidate baseline model for sealed evaluation was:
 `Random Forest Regression`
+
+### Updated after Leave-One-Track-Out (LOTO) validation
+
+The selected baseline configuration for sealed evaluation is:
+`Ridge Regression`
 
 The selected feature group is:
 `SEM-only`
@@ -172,21 +179,22 @@ The selected target group is:
 
 The final baseline selection was validated using Leave-One-Track-Out (LOTO) cross-validation across all development tracks (Tracks 8, 10, and 14). This ensured the selected model and feature configuration robustly generalized across track holdouts, rather than overfitting to a single validation split.
 
-**LOTO Cross-Validation Average Results:**
+Aggregate LOTO validation across all development tracks demonstrated that **Ridge Regression** with **SEM-only** features produced the best pooled **MAE**, **RMSE**, and **R²** while maintaining stable performance across held-out tracks.
 
-| Feature group | Average MAE | Average RMSE | Average Median AE | Average R² |
-|---|---:|---:|---:|---:|
-| SEM-only | 1.4711 | 2.5553 | 1.2951 | -0.6407 |
-| Thermal + SEM | 1.4968 | 2.6132 | 1.3132 | -0.6208 |
+**LOTO Cross-Validation Aggregate Results (pooled across folds):**
 
-Based on the LOTO evaluation, the **SEM-only** feature set produced the strongest average generalization performance (lower MAE, RMSE, and Median AE) across unseen tracks. Adding thermal features degraded held-out error metrics, indicating overfitting to the training tracks.
+| Rank | Model | Feature group | Pooled MAE | Pooled RMSE | Pooled Median AE | Pooled R² |
+|---:|---|---|---:|---:|---:|---:|
+| 1 | Ridge Regression | SEM-only | 1.275480 | 1.655831 | 1.013160 | -0.282801 |
+| 2 | Linear Regression | SEM-only | 1.281532 | 1.665863 | 1.018918 | -0.299170 |
+| 3 | Random Forest | Thermal + SEM | 1.482236 | 1.835332 | 1.292172 | -0.434097 |
+| 4 | Random Forest | SEM-only | 1.484451 | 1.843827 | 1.290224 | -0.475172 |
 
-The Random Forest configuration remains strictly frozen as:
+In aggregate LOTO validation, **SEM-only** produced the strongest pooled performance. Thermal-containing feature groups did not improve the best pooled metrics in this study, and showed less consistent behavior across folds.
 
-- `n_estimators = 300`
-- `min_samples_leaf = 2`
-- `random_state = 42`
-- `n_jobs = -1`
+The Ridge Regression configuration remains strictly frozen as:
+
+- `alpha = 1.0`
 
 No hyperparameter tuning will be performed using Track 21.
 
@@ -207,11 +215,15 @@ For multi-output PCA targets, metrics are reported as:
 - per-target metrics where appropriate;
 - per-track metrics where target truth is available.
 
-The development validation procedure is fixed as:
+The development baseline evaluation procedure (historical) is fixed as:
 
 - train on Tracks 8 and 10;
 - validate on Track 14;
-- keep Track 21 sealed until final evaluation.
+- keep Track 21 sealed during development.
+
+The final model-selection validation (subsequent) used **Leave-One-Track-Out (LOTO)** across Tracks 8, 10, and 14.
+
+For sealed Track 21 evaluation, the frozen pipeline will be trained using **all development tracks (Tracks 8, 10, and 14)** before evaluating Track 21.
 
 The Track 21 evaluation will use the same:
 
@@ -259,10 +271,11 @@ The following Phase III components are frozen for sealed evaluation:
 
 ### Baseline model selection
 
-- selected model family: Random Forest Regression
+- initial freeze candidate model family: Random Forest Regression
+- selected model family (post-LOTO): Ridge Regression
 - selected feature group: SEM-only
 - selected target group: PCA shape (`pc1`--`pc5`)
-- fixed Random Forest configuration listed above
+- fixed Ridge Regression configuration listed above
 
 ---
 
