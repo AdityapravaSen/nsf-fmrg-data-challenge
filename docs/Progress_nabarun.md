@@ -9,11 +9,9 @@
 development\
 **Last completed major experiment:** Experiment 14 --- Phase 2
 merge-point validation\
-**Current scientific status:** Experiments 03--14 completed (Track 21
-remains sealed)\
-**Current project phase:** Phase III baseline experimentation completed\
-**Current focus:** Final model selection, sealed Track 21 evaluation, and
-report preparation
+**Current scientific status:** Experiments 03--14 completed; Phase III engineering infrastructure and baseline modeling completed; LOTO validation completed (Track 21 remains sealed)\
+**Current project phase:** Phase III pipeline frozen for sealed Track 21 evaluation\
+**Current focus:** Execute the frozen sealed Track 21 evaluation and finalize reporting
 
 ------------------------------------------------------------------------
 
@@ -63,7 +61,9 @@ Goals:
 
 • Predict local geometry descriptors from thermal and SEM observations
 
-• Evaluate on sealed Track 21
+• Validate the final baseline selection using development-only Leave-One-Track-Out (LOTO) across Tracks 8, 10, and 14 (completed; Track 21 remained sealed)
+
+• Evaluate once on sealed Track 21 using the frozen pipeline
 
 ------------------------------------------------------------------------
 
@@ -1761,9 +1761,9 @@ Current status:
 
 Immediate objectives:
 
-- select the final baseline model and feature set,
-- freeze the final reporting protocol,
-- evaluate on held-out Track 21 only after the final pipeline is frozen,
+- **(Completed)** validate final baseline selection using development-only LOTO across Tracks 8, 10, and 14 (Track 21 remained sealed)
+- **(Completed)** freeze the final baseline configuration and reporting protocol for sealed evaluation
+- evaluate on held-out Track 21 only using the frozen pipeline
 - prepare publication-quality figures and tables,
 - refine the final challenge report.
 
@@ -1816,10 +1816,13 @@ descriptor must preserve normalized cross-sectional shape, local
 amplitude, longitudinal process-state variation, and
 measurement-validity information.
 
-The next stage of the project will therefore compare alternative
+# IGNORE THIS AS THIS HAS ALREADY BEEN DONE
+<!-- The next stage of the project will therefore compare alternative
 descriptor implementations while keeping these scientifically derived
 requirements fixed. Only after selecting a defensible descriptor will
-multimodal machine-learning models be developed.
+multimodal machine-learning models be developed. -->
+
+Following descriptor selection, Phase III engineering infrastructure was completed and baseline multimodal models were evaluated on the development tracks. A subsequent Leave-One-Track-Out (LOTO) study across Tracks 8, 10, and 14 established Ridge Regression (alpha = 1.0) with SEM-only features as the final frozen baseline configuration for sealed Track 21 evaluation. Track 21 remained sealed throughout this process.
 
 ------------------------------------------------------------------------
 
@@ -2579,11 +2582,9 @@ The geometry descriptor remains unchanged.
 The frozen descriptor implementation and merge validation from
 Experiments 12--14 remain the scientific basis for Phase III modeling.
 
-Track 21 remains sealed until the full baseline modeling pipeline and
-reporting protocol are frozen.
+Track 21 remains sealed. The Phase III engineering infrastructure and baseline modeling pipeline were completed on the development tracks before the final development-only LOTO model-selection validation was performed.
 
-The project is now ready to begin baseline multimodal model development
-using aligned feature sequences and aligned geometry-target arrays.
+The project is now ready to execute the frozen sealed evaluation protocol on Track 21.
 
 ## Phase III Baseline Modeling Results
 
@@ -2802,6 +2803,10 @@ overfitting the development training tracks.
 These interpretations remain provisional until the final pipeline is
 frozen and evaluated once on Track 21.
 
+## Leave-One-Track-Out (LOTO) model-selection validation (development-only)
+
+The original baseline experiments used a fixed development holdout (train: Tracks 8 + 10; validate: Track 14). Because only three development tracks were available (Tracks 8, 10, and 14), a subsequent Leave-One-Track-Out (LOTO) validation was performed as a more robust development-only model-selection procedure. Track 21 remained sealed throughout. The pooled LOTO results showed that **Ridge Regression (alpha = 1.0)** with **SEM-only** features provided the strongest aggregate generalization performance, so Ridge Regression + SEM-only became the frozen baseline configuration for the sealed Track 21 evaluation.
+
 ## Current Phase III project status
 
 The Phase III modeling workflow now has:
@@ -2818,6 +2823,8 @@ family, SEM-only features produced the best held-out Track 14 validation
 metrics, while the combined thermal + SEM model produced the strongest
 training-track fit.
 
+The strongest initial nonlinear baseline on the original Track 14 holdout split was the Random Forest family. Final model selection was subsequently validated using development-only LOTO across Tracks 8, 10, and 14, and the frozen baseline configuration is now **Ridge Regression (alpha = 1.0)** with **SEM-only** features for PCA shape targets (`pc1`--`pc5`).
+
 Track 21 remains intentionally sealed.
 
 ## Current future work
@@ -2827,9 +2834,8 @@ model classes.
 
 Immediate next steps are:
 
-- select the final model and feature set for sealed evaluation;
-- freeze the preprocessing, target-alignment, and reporting protocol;
-- generate final Track 21 predictions only after the pipeline is frozen;
+- execute the frozen sealed-evaluation run on Track 21 (without modifying preprocessing, alignment, feature selection, model configuration, or reporting);
+- generate Track 21 predictions and report results using the frozen reporting protocol;
 - prepare publication-quality figures and summary tables;
 - refine the final challenge report and paper text.
 
