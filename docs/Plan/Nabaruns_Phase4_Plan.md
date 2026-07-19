@@ -1,68 +1,168 @@
 # Phase IV Plan: Sealed Evaluation & Scientific Validation
 
-> **Guiding Principle for Phase IV:**  
-> *Every future change must answer a specific scientific question.* 
-> We are shifting from "Can we build a scientifically defensible pipeline?" to "What does this pipeline actually tell us about the physics?"
+> **Guiding Principle for Phase IV:**
+> *Every future change must answer a specific scientific question.*
+> We are shifting from *"Can we build a scientifically defensible pipeline?"* to *"What does this pipeline actually tell us about the physics?"* 
 
 ## Roadmap Overview
-- **IV-A:** Frozen evaluation (Guaranteed)
-- **IV-B:** Scientific analysis (Guaranteed)
-- **IV-C:** Decision checkpoint (Guaranteed)
-- **IV-D:** Version 2 development (Optional - only if justified)
+
+* **IV-A:** Frozen evaluation (Guaranteed)
+* **IV-B:** Scientific analysis (Guaranteed)
+* **IV-C:** Decision checkpoint (Guaranteed)
+* **IV-D:** Version 2 development (Optional — only if scientifically justified)
 
 ---
 
-## Task Split & Responsibilities
+# Current Phase IV Progress
 
-### 👤 Pipeline Owner (You)
-**Phase IV-A: Frozen Evaluation** (Goal: Execute the frozen pipeline with zero modifications)
+## ✅ Completed
 
-- [ ] **Freeze the Repository:** Create a `phase4_track21_baseline` branch or tag. Archive metrics, predictions, configs, plots, and the commit hash. This is "Frozen Baseline v1" and must never be altered.
-- [ ] **Run Track 21 Preprocessing:** Complete data prep for Track 21.
-- [ ] **Generate Track 21 Predictions:** Run the exact frozen pipeline to produce `predictions.csv` (or equivalent).
-- [ ] **Compute Evaluation Metrics:** Run the existing metrics pipeline (MAE, RMSE, Median AE, R², etc.). Do not invent new metrics.
-- [ ] **Generate Visualizations:** Create plots for the final report (e.g., predicted vs. actual PC coefficients, reconstructed profile overlays, residual histograms, error along x, profile comparisons).
-- [ ] **Archive Outputs:** Save everything in a timestamped `phase4_track21_baseline/` directory.
-- [ ] **Produce Phase IV Report:** Write a lightweight `PhaseIV_Baseline_Evaluation.md` containing the frozen config, metrics, figures, and objective facts/observations. **No conclusions or interpretations yet.**
+* [x] Phase III pipeline frozen.
+* [x] Dedicated Phase IV inference-wrapper architecture finalized.
+* [x] `scripts/25_phase4_baseline_evaluation.py` created.
+* [x] Stage 1 implementation completed.
+* [x] Stage 1 preflight executed successfully.
+* [x] Dataset, Track 21, PCA model, and configuration successfully validated.
+* [x] Timestamped Phase IV output directory creation implemented.
+* [x] Stage 1 metadata generation implemented.
 
-### 👤 Scientific Reviewer (Adi)
-**Parallel Work during IV-A** (Goal: Interpret results and prepare deliverables)
+## 🚧 In Progress
 
-- [ ] **Independent Review:** Inspect Track 21 outputs with fresh eyes. Identify where it fails, which descriptors fail, if SEM outperforms thermal, and if error drifts.
-- [ ] **Report Skeleton:** Begin drafting `Final_Report.pdf` (Executive Summary, Method, Results, Discussion, Limitations, Future Work).
-- [ ] **Presentation Deck:** Start building the Challenge Presentation slides immediately. 
-- [ ] **Systematic Error Identification:** Compare feature groups and prepare scientific interpretations of the pipeline's failures.
-
-### 👥 Together (You + Adi)
-**Phase IV-B: Scientific Analysis & Phase IV-C: Decision Checkpoint**
-
-- [ ] **Conduct Scientific Analysis (IV-B):** Review outputs together. Answer questions like:
-  - Does Track 21 resemble Track 8 or 10?
-  - Which PCs fail and is the failure localized?
-  - Is there systematic drift or error growth along x?
-  - How do Thermal-only vs. SEM-only vs. Combined features perform?
-- [ ] **Hold Decision Checkpoint Meeting (IV-C):** Answer three critical questions:
-  1. *Is Frozen Baseline already submission quality?* (If YES: Submit. If NO: Continue).
-  2. *Can we explain the failure?* (Must be a physics/data explanation, e.g., "insufficient temporal context," not just "high MAE").
-  3. *Is there ONE hypothesis worth testing?* (If NO: Submit. If YES: Proceed to Phase IV-D).
+* [ ] Stage 2 — preprocessing, scaling, and sequence generation.
+* [ ] Stage 3 — model fitting and Track 21 prediction.
+* [ ] Stage 4 — reconstruction, metrics, and final outputs.
 
 ---
 
-## Phase IV-D: Version 2 Development (Optional)
-*Only initiated if a clear hypothesis is identified in Phase IV-C.*
+# Task Split & Responsibilities
 
-- [ ] **Test ONE Hypothesis:** Focus on a single, specific scientific question (e.g., "Increase temporal window" or "Incorporate long-range thermal features"). 
-- [ ] **No Model Shopping:** Do not randomly try new algorithms (e.g., XGBoost, CNN, Transformer) without a concrete scientific hypothesis driving the change.
+## 👤 Nabarun (Pipeline & Evaluation)
+
+### Phase IV-A: Frozen Evaluation
+
+Remaining work:
+
+* [ ] Complete Stage 2 of `25_phase4_baseline_evaluation.py`
+* [ ] Complete Stage 3 (Ridge fitting + Track 21 prediction)
+* [ ] Complete Stage 4 (PCA reconstruction + metrics + exports)
+* [ ] Execute the complete frozen baseline evaluation.
+* [ ] Archive all outputs into the timestamped Phase IV directory.
+* [ ] Produce a lightweight `PhaseIV_Baseline_Evaluation.md` containing only:
+
+  * frozen configuration
+  * objective metrics
+  * generated figures
+  * factual observations
+
+(No interpretation.)
 
 ---
 
-## 🎯 Immediate Checklist (Today's Handoff Goal)
-To ensure Adi has concrete material to review tonight, aim to complete these items today:
+## 👤 Aditya (Independent Parallel Work)
 
-- [ ] Frozen Phase III branch/tag created.
-- [ ] Track 21 preprocessing completed.
-- [ ] Track 21 predictions generated for all frozen baselines.
-- [ ] Metrics computed.
-- [ ] Visualizations generated.
-- [ ] Outputs archived in a timestamped `phase4_track21_baseline/` directory.
-- [ ] A short `PhaseIV_Baseline_Evaluation.md` written with the metrics and a few objective observations (no interpretation yet).
+### Documentation
+
+* [ ] Continue building the final report structure.
+* [ ] Prepare the presentation deck.
+* [ ] Organize figures/placeholders for:
+
+  * methodology
+  * preprocessing
+  * feature engineering
+  * model selection
+  * LOTO validation
+  * Phase IV evaluation
+* [ ] Verify that all experiment numbers, filenames, and references are consistent throughout the report.
+
+### Pipeline Audit
+
+Without waiting for Track 21 predictions:
+
+* [ ] Independently review the frozen Phase III pipeline.
+* [ ] Review the frozen model-selection results.
+* [ ] Review the finalized evaluation methodology.
+* [ ] Identify any documentation gaps or reproducibility issues.
+* [ ] Create a checklist of figures and tables still required for the final report.
+
+### Reproducibility
+
+* [ ] Verify that every reported experiment has:
+
+  * corresponding code
+  * output directory
+  * metrics
+  * configuration
+  * reproducible naming
+
+* [ ] Prepare a list of any missing artifacts before final submission.
+
+---
+
+# 👥 Together
+
+After the frozen baseline finishes:
+
+## Phase IV-B — Scientific Analysis
+
+Review together:
+
+* performance on Track 21
+* reconstruction quality
+* residual behaviour
+* descriptor performance
+* localized failure modes
+* drift along the scan direction
+* comparison with historical LOTO performance
+
+---
+
+## Phase IV-C — Decision Checkpoint
+
+Answer only three questions:
+
+1. Is the frozen baseline already submission quality?
+2. Can observed failures be explained scientifically?
+3. Is there exactly one scientifically motivated hypothesis worth testing?
+
+If the answer to (3) is **No**, the frozen baseline becomes the final submission.
+
+---
+
+# Phase IV-D (Optional)
+
+Only if justified:
+
+* [ ] Test exactly one scientific hypothesis.
+* [ ] No model shopping.
+* [ ] No architecture exploration.
+* [ ] No parameter fishing.
+
+Every modification must answer a specific scientific question.
+
+---
+
+# 🎯 Immediate Handoff Status
+
+## Completed today (Nabarun)
+
+* [x] Phase IV architecture finalized.
+* [x] Evaluation wrapper approach finalized.
+* [x] Stage 1 implementation completed.
+* [x] Stage 1 preflight executed successfully.
+* [x] All dataset and configuration validation checks passed.
+
+## Tomorrow (Nabarun)
+
+* [ ] Stage 2 implementation.
+* [ ] Stage 3 implementation.
+* [ ] Stage 4 implementation.
+* [ ] Execute frozen Track 21 evaluation.
+
+## Tonight (Aditya)
+
+* [ ] Continue report writing.
+* [ ] Continue presentation development.
+* [ ] Audit reproducibility of all experiments.
+* [ ] Review the frozen methodology and prepare any documentation/questions that can be addressed independently of the Track 21 results.
+
+---
