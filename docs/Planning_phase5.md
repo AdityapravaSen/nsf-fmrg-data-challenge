@@ -3,7 +3,7 @@
 ## 1. What We Have Done (Phase I – III Summary)
 We have successfully engineered a highly rigorous, multimodal machine learning pipeline. Our work to date represents a comprehensive and mathematically sound exploration of the dataset:
 
-* **The "Rosetta Stone" Alignment:** We built a unified pipeline that perfectly aligns in-situ thermal history (5-frame moving windows) and local SEM substrate context onto a shared spatial X-axis (20mm → 100mm) with extreme precision.
+* **The Alignment:** We built a unified pipeline that perfectly aligns in-situ thermal history (5-frame moving windows) and local SEM substrate context onto a shared spatial X-axis (20mm → 100mm) with extreme precision.
 * **Rigorous Target Extraction:** After proving that simple deterministic "width" measurements were susceptible to severe noise (mixed-sign disturbances, height-map valleys), we developed a complex, scientifically defensible target utilizing PCA to capture normalized cross-sectional shape, local amplitude, and elevation.
 * **Extensive Baseline Study:** We designed and executed a leak-proof Phase III modeling suite with Leave-One-Track-Out (LOTO) cross-validation. We evaluated a wide range of architectures including Linear Regression, Ridge Regression, Random Forests, LSTMs, and MLPs.
 * **Multimodal Feature Ablation:** We systematically tested model performance using Thermal-only, SEM-only, and Thermal+SEM feature groups to quantify source attribution.
