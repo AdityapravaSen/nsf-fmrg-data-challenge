@@ -126,3 +126,21 @@ The final objective of Phase III was to seamlessly integrate the feature preproc
 * **Pipeline Freeze:** Update the `PhaseIII_Pipeline_Freeze.md` document to officially lock in the **Random Forest + SEM-only** configuration as the winning baseline based on the LOTO data.
 * **Phase III Closure:** With the LOTO validation complete and the infrastructure proven stable, development on Phase III is officially closed.
 * **Phase IV Execution:** Break the seal on Track 21. The next script will train the frozen pipeline on Tracks 8, 10, and 14 combined, predict Track 21 geometry, and export the final metrics/CSVs for the challenge paper. No further tuning is permitted.
+
+# Phase IV Progress Report: Sealed Evaluation & Blind Inference
+**Branch:** `Adi` | **Focus:** Final Model Execution, Blind Inference, and Visualization
+
+## 🎯 Phase Objective
+The objective of Phase IV was to execute the officially frozen Phase III pipeline—**Ridge Regression ($\alpha = 1.0$) using SEM-only features**—on the fully sealed Track 21 dataset. My primary responsibilities were to build the independent execution script, generate the final prediction deliverables, and visualize the model's spatial trajectories without introducing any data leakage.
+
+---
+
+## ✅ Key Achievements & Engineering Steps Completed
+
+### 1. Script Modularization & Preprocessing Fixes
+* **Modular Execution:** Developed `26_phase4_model_execution.py` to cleanly separate the model training/inference logic from the Stage 1 preflight wrapper developed by Person B (Nabarun). 
+* **Bypassing the Validity Filter:** Discovered that the frozen `FeaturePreprocessor` automatically dropped Track 21 because the organizers withheld the `pca_ready` flag in the sealed test set. I successfully overrode this filter specifically for the `eval_df` to ensure Track 21 could be processed while keeping the training data strictly filtered.
+
+### 2. Handling Blind Inference (The "NaN" Target Issue)
+* **Challenge:** Track 21 contained no ground truth PCA geometry targets (all `NaN`s), which intentionally broke the frozen `Phase3TargetAligner` during evaluation.
+* **Solution:** Refactored the execution script to perform true **Blind Inference**. I mapped
