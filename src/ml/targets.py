@@ -109,6 +109,13 @@ class Phase3TargetAligner:
                     "_descriptor_matched",
                 ],
             },
+            "smoothed_macro_width": {
+                "targets": ["smoothed_macro_width_mm"],
+                "validity": [
+                    "eligible", 
+                    "is_within_heightmap_x_coverage"
+                ],
+            },
         }
 
         # ==========================================

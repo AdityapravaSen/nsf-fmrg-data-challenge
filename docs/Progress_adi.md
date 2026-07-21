@@ -144,3 +144,81 @@ The objective of Phase IV was to execute the officially frozen Phase III pipelin
 ### 2. Handling Blind Inference (The "NaN" Target Issue)
 * **Challenge:** Track 21 contained no ground truth PCA geometry targets (all `NaN`s), which intentionally broke the frozen `Phase3TargetAligner` during evaluation.
 * **Solution:** Refactored the execution script to perform true **Blind Inference**. I mapped
+
+
+# Phase 5 Progress Report — Physics-Constrained Baseline & R² Optimization
+
+**Author:** Adi (Person A)  
+**Milestone:** Phase 5 Completion & Generalization Optimization  
+**Project:** NSF Future Manufacturing Data Challenge  
+
+---
+
+## Executive Summary
+
+Phase 5 focused entirely on resolving the negative R² scores and cross-track generalization bottlenecks encountered during Phase 3 and Phase 4 model evaluations. By analyzing competitive success metrics and applying rigorous physical constraints, we successfully transitioned our pipeline from high-variance complex features to a stable, interpretable physics-based regression baseline.
+
+---
+
+## 1. Experimental Strategy & Pivot
+
+Our initial Phase 3/4 baseline yielded negative R² scores (averaging **-0.282**), indicating severe overfitting caused by high-frequency spatial noise and non-generalizable surface features. 
+
+To address this, we executed a two-pronged scientific pivot:
+1. **SEM De-selection (Input Ablation):** Dropped all Scanning Electron Microscopy (SEM) substrate roughness variables. Correlation audits revealed they lack sign-consistent alignment across distinct laser power tracks, causing models to memorize local tiles rather than learning general physics.
+2. **Physics Constraint Isolation:** Restricted the feature space strictly to three foundational thermal macro-drivers: `peak_temp`, melt pool length (`mp_length`), and the linearized square root of melt pool area (`sqrt_mp_area`).
+3. **Target Transformation:** Replaced high-dimensional, noisy PCA components with a smoothed, interpolated 1D macro-scale target (`smoothed_macro_width_mm`) to capture macroscopic track behavior without high-frequency measurement jitter.
+
+---
+
+## 2. Experiments Carried Out
+
+We conducted comparative Leave-One-Track-Out (LOTO) cross-validation (holding out development tracks 8, 10, and 14 iteratively) across two model architectures:
+
+### **Experiment A: Coordinate-Augmented & Linear Physics Baselines**
+* Tested adding spatial position coordinates (`x_norm`) and evaluated linear regression variants.
+* **Final Selected Model:** **Bayesian Ridge Regression**.
+* **Results:** Drastically reduced prediction errors (~60–65% improvement) and stabilized the LOTO R² score from **-0.282** up to **-0.041** (with Track 8 sitting at **-0.004**, effectively tracking the theoretical zero-variance mean threshold).
+
+### **Experiment B: Non-Linear Model Stress-Test (Random Forest)**
+* Tested `RandomForestRegressor` to capture potential non-linearities on the same cleaned physics feature space.
+* **Results:** Failed catastrophically during cross-track extrapolation (average R² dropped to **-1.628**, with held-out Track 8 plunging to **-3.858**). 
+* **Scientific Conclusion:** Tree-based non-linear models overfit to the training power range and clip values when encountering out-of-distribution lower power tracks (e.g., 200W Track 8). This formally justified the selection of a linear Bayesian Ridge model for robust extrapolation.
+
+---
+
+## 3. Files Modified & Created
+
+To maintain pipeline integrity and prevent modifications to Nabarun's base target scripts, all updates were strictly isolated:
+
+* **`src/ml/targets.py`**
+  * Registered the `"smoothed_macro_width"` target group profile to interface seamlessly with the target aligner.
+* **`scripts/phase3_data_loader.py`**
+  * Updated `FeaturePreprocessor` to purge SEM variables, retain only the 3 core thermal physics drivers, and dynamically compute `sqrt_mp_area`.
+* **`scripts/patch_dataset.py` (or `12b_patch_smoothed_targets.py`)**
+  * Implemented an inline data-patching utility that performs missing-gap interpolation and a centered rolling average (window size = 11) on `amplitude_um`, cleanly injecting `smoothed_macro_width_mm` directly into `processed_data/final_multimodal_dataset.csv`.
+* **`scripts/26_phase5_physics_constrained_baseline.py`**
+  * Created the canonical LOTO training and evaluation script utilizing `BayesianRidge`.
+* **`scripts/27_phase5_generate_evaluation_plots.py`**
+  * Created an automated visualization script to generate high-resolution evaluation artifacts.
+
+---
+
+## 4. Generated Artifacts & Visualizations
+
+The evaluation scripts successfully compiled and saved verification assets under **`processed_data/evaluation_plots/`**:
+
+1. **`loto_spatial_predictions_comparison.png`**
+   * High-resolution spatial trajectory plots comparing ground-truth smoothed width against Bayesian Ridge predictions along the $x\_position\_mm$ scan axis across all LOTO folds.
+2. **`loto_pooled_parity_plot.png`**
+   * A pooled regression parity scatter plot showing model alignment against the ideal $y = x$ line across all cross-validation samples.
+
+[![loto-pooled-parity-plot.png](https://i.postimg.cc/Rhf2B4BS/loto-pooled-parity-plot.png)](https://postimg.cc/SYSgL0R3)
+[![loto-spatial-predictions-comparison.png](https://i.postimg.cc/BbDR040K/loto-spatial-predictions-comparison.png)](https://postimg.cc/JHrp3wtr)
+
+---
+
+## Next Steps (Phase 6)
+* Finalize code commits to the shared repository.
+* Run final blind inference on the sealed **Track 21** dataset using the frozen Bayesian Ridge pipeline.
+* Compile final report documentation.
