@@ -35,6 +35,7 @@ from typing import Dict, List
 
 import numpy as np
 import pandas as pd
+from sklearn.linear_model import Ridge
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +46,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.append(str(SRC_DIR))
 
 from scripts.phase3_data_loader import FeaturePreprocessor
+from ml.targets import Phase3TargetAligner
 
 
 # =============================================================================
@@ -298,6 +300,151 @@ def print_console_summary(
     print("No scaler fitting, model fitting, Track 21 prediction, reconstruction, or metrics were performed.")
 
 
+def flatten_windows(x_seq: np.ndarray) -> np.ndarray:
+    """Flatten sequence windows for the frozen Ridge Regression baseline."""
+
+    if x_seq.ndim != 3:
+        raise PreflightError(f"Expected 3D sequence array; got shape {x_seq.shape}.")
+    samples, window_size, n_features = x_seq.shape
+    if window_size != WINDOW_SIZE:
+        raise PreflightError(f"Window size mismatch: expected {WINDOW_SIZE}, got {window_size}.")
+    if n_features != len(frozen_feature_columns()):
+        raise PreflightError(f"Feature dimension mismatch: expected {len(frozen_feature_columns())}, got {n_features}.")
+    return x_seq.reshape(samples, window_size * n_features)
+
+
+def execute_blind_inference(
+    dev: pd.DataFrame,
+    track21: pd.DataFrame,
+    feature_columns: List[str],
+    output_paths: Dict[str, Path],
+) -> Dict[str, object]:
+    """Execute frozen Stage 2/3 blind inference using the proven Ridge workflow."""
+
+    print("\n" + "=" * 60)
+    print("STAGE 2: Preprocessing & Sequence Generation")
+    print("=" * 60)
+
+    preprocessor = FeaturePreprocessor()
+    preprocessor.all_features = list(feature_columns)
+
+    train_df = dev.copy()
+    eval_df = track21.copy()
+
+    print(f"Train split: {len(train_df)} valid rows (Tracks: {TRAIN_TRACKS})")
+    print(f"Eval split:  {len(eval_df)} inference rows (Track: {INFERENCE_TRACK})")
+
+    preprocessor.scaler.fit(train_df[preprocessor.all_features])
+    preprocessor.is_fitted = True
+
+    train_df.loc[:, preprocessor.all_features] = preprocessor.scaler.transform(train_df[preprocessor.all_features])
+    eval_df.loc[:, preprocessor.all_features] = preprocessor.scaler.transform(eval_df[preprocessor.all_features])
+
+    require_finite(train_df, feature_columns, "scaled development training rows")
+    require_finite(eval_df, feature_columns, "scaled Track 21 inference rows")
+
+    print("\nCreating 5-frame sequence windows...")
+    x_train_seq, train_meta = preprocessor.create_sequence_windows(train_df, window_size=WINDOW_SIZE)
+    x_track21_seq, track21_meta = preprocessor.create_sequence_windows(eval_df, window_size=WINDOW_SIZE)
+
+    x_train = flatten_windows(x_train_seq)
+    x_track21 = flatten_windows(x_track21_seq)
+
+    print(f"X_train_seq shape: {x_train_seq.shape}")
+    print(f"X_train_flat shape: {x_train.shape}")
+    print(f"X_track21_seq shape: {x_track21_seq.shape}")
+    print(f"X_track21_flat shape: {x_track21.shape}")
+    print(f"train_meta rows: {len(train_meta)}")
+    print(f"track21_meta rows: {len(track21_meta)}")
+
+    if len(train_meta) != len(x_train):
+        raise PreflightError("Training metadata length does not match flattened training windows.")
+    if len(track21_meta) != len(x_track21):
+        raise PreflightError("Track 21 metadata length does not match flattened Track 21 windows.")
+
+    print("\n" + "=" * 60)
+    print("STAGE 3: Target Alignment, Ridge Fitting, and Blind Prediction")
+    print("=" * 60)
+
+    aligner = Phase3TargetAligner(dataset_path=DATASET_PATH)
+    y_train = aligner.align(meta_df=train_meta, target_group=TARGET_GROUP, return_metadata=False)
+
+    if y_train.shape != (len(x_train), len(TARGET_COLUMNS)):
+        raise PreflightError(f"Training target shape mismatch: got {y_train.shape}, expected {(len(x_train), len(TARGET_COLUMNS))}.")
+    if not np.isfinite(y_train).all():
+        raise PreflightError("Training targets contain non-finite values after alignment.")
+
+    print(f"Fitting Ridge Regression (alpha={RIDGE_ALPHA}) on {x_train.shape[0]} development samples...")
+    model = Ridge(alpha=1.0, random_state=42)
+    model.fit(x_train, y_train)
+
+    print(f"Predicting Track {INFERENCE_TRACK} (blind inference)...")
+    y_pred = model.predict(x_track21)
+    expected_prediction_shape = (len(x_track21), len(TARGET_COLUMNS))
+    if y_pred.shape != expected_prediction_shape:
+        raise PreflightError(f"Prediction shape mismatch: got {y_pred.shape}, expected {expected_prediction_shape}.")
+    if not np.isfinite(y_pred).all():
+        raise PreflightError("Track 21 predictions contain non-finite values.")
+
+    print("\n" + "=" * 60)
+    print("STAGE 4: Prediction Export")
+    print("=" * 60)
+    print("Track 21 is a blind test set. Ground truth PCA targets are unavailable locally.")
+    print("Skipping local metric calculations and exporting prediction CSV.")
+
+    output_df = track21_meta[IDENTITY_COLUMNS].copy()
+    for i, col in enumerate(TARGET_COLUMNS):
+        output_df[f"predicted_{col}"] = y_pred[:, i]
+    output_df["model_name"] = MODEL_NAME
+    output_df["ridge_alpha"] = RIDGE_ALPHA
+    output_df["feature_group"] = FEATURE_GROUP
+    output_df["window_size"] = WINDOW_SIZE
+
+    prediction_path = output_paths["predictions"] / "track21_predictions.csv"
+    output_df.to_csv(prediction_path, index=False)
+
+    development_metadata_path = output_paths["metadata"] / "final_development_training_metadata.csv"
+    track21_metadata_path = output_paths["metadata"] / "track21_inference_metadata.csv"
+    train_meta.to_csv(development_metadata_path, index=False)
+    track21_meta.to_csv(track21_metadata_path, index=False)
+
+    print(f"Prediction CSV: {prediction_path}")
+    print(f"Development metadata CSV: {development_metadata_path}")
+    print(f"Track 21 metadata CSV: {track21_metadata_path}")
+
+    return {
+        "stage": "stage_2_3_4_blind_inference_complete",
+        "train_rows": int(len(train_df)),
+        "track21_rows": int(len(eval_df)),
+        "train_windows": int(len(train_meta)),
+        "track21_windows": int(len(track21_meta)),
+        "x_train_seq_shape": list(x_train_seq.shape),
+        "x_train_flat_shape": list(x_train.shape),
+        "x_track21_seq_shape": list(x_track21_seq.shape),
+        "x_track21_flat_shape": list(x_track21.shape),
+        "y_train_shape": list(y_train.shape),
+        "y_pred_shape": list(y_pred.shape),
+        "prediction_csv": str(prediction_path),
+        "development_metadata_csv": str(development_metadata_path),
+        "track21_metadata_csv": str(track21_metadata_path),
+        "metrics_status": "skipped_track21_targets_unavailable",
+        "track21_policy": {
+            "used_for_scaler_fitting": False,
+            "used_for_model_fitting": False,
+            "used_for_hyperparameter_tuning": False,
+            "target_labels_required_for_prediction": False,
+        },
+    }
+
+
+def write_run_metadata(output_paths: Dict[str, Path], payload: Dict[str, object]) -> Path:
+    """Write consolidated run metadata."""
+
+    path = output_paths["metadata"] / "run_metadata.json"
+    path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return path
+
+
 def main() -> int:
     feature_columns = frozen_feature_columns()
     output_paths = create_output_directories(OUTPUT_DIR)
@@ -337,6 +484,13 @@ def main() -> int:
     }
     metadata_path = write_stage1_metadata(output_paths, payload)
     print_console_summary(df, dev, track21, feature_columns, pca_summary, output_paths, metadata_path)
+
+    inference_payload = execute_blind_inference(dev, track21, feature_columns, output_paths)
+    payload.update(inference_payload)
+    run_metadata_path = write_run_metadata(output_paths, payload)
+
+    print("\nPhase IV frozen baseline blind inference complete: PASS")
+    print(f"Run metadata: {run_metadata_path}")
     return 0
 
 
