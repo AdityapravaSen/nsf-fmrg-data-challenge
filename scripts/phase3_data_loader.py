@@ -47,6 +47,10 @@ class FeaturePreprocessor:
         
         if len(train_df) == 0:
             raise ValueError(f"No data found for training tracks: {train_tracks}")
+
+        train_df = train_df.astype({feature: float for feature in self.all_features})
+        if len(eval_df) > 0:
+            eval_df = eval_df.astype({feature: float for feature in self.all_features})
             
         print(f"Train split: {len(train_df)} rows (Tracks: {train_tracks})")
         print(f"Eval split:  {len(eval_df)} rows (Tracks: {eval_tracks})")
