@@ -3,15 +3,15 @@
 ## Height-Map Target Extraction --- Progress and Scientific Decision Log
 
 **Workstream:** Bruker/Wyko height-map target extraction (Person B)\
-**Status:** Exploratory method development\
+**Status:** Target-definition audit (finite-support / local-width)\
 **Development tracks:** 8, 10, 14\
 **Sealed track:** 21 --- do not load or inspect during method
 development\
-**Last completed major experiment:** Experiment 14 --- Phase 2
-merge-point validation\
-**Current scientific status:** Experiments 03--14 completed; Phase III engineering infrastructure and baseline modeling completed; LOTO validation completed (Track 21 remains sealed)\
-**Current project phase:** Phase III pipeline frozen for sealed Track 21 evaluation\
-**Current focus:** Execute the frozen sealed Track 21 evaluation and finalize reporting
+**Last completed major experiment:** Experiment 28 --- local width from Wyko finite-support topology (Candidate 1: longest contiguous finite y-run)\
+**Current scientific status:** Experiments 03--27 recorded; Phase V local-width hypothesis audit in progress. Experiment 28 completed with multiple concerns and no scientific acceptance of Candidate 1 as a prediction target. Experiment 29 execution **stopped before Wyko geometry loading** due to a locked anchor-coordinate data discrepancy; Track 21 geometry remained sealed and was not loaded.\
+**Current project phase:** Phase V target audit --- finite-support / local-width hypothesis falsification\
+**Current focus:** Resolve the Experiment 29 anchor-coordinate protocol/data discrepancy (finite `heightmap_x_mm` anchors) and obtain an explicitly approved protocol decision before rerunning or replacing Experiment 29.\
+**Current branch:** `nabarun-exp2-local-width`
 
 ------------------------------------------------------------------------
 
@@ -1744,6 +1744,39 @@ as clean ground-truth evidence that one boundary definition is superior.
   Full processed-track    Unresolved              May require multimodal
   width from profilometry                         semantic evidence or
   alone                                           probabilistic target
+
+    Finite-support topology  Under audit             New Phase V hypothesis:
+    encodes local width                              Wyko finite/NaN mask may
+                                                                                                    encode measurable track
+                                                                                                    surface region without
+                                                                                                    height-threshold instability
+
+    Candidate 1: longest     Not accepted            Experiment 28 results:
+    contiguous finite y-run  (CONCERNS)              computable but shows
+                                                                                                    nontrivial discontinuities
+                                                                                                    and is inconsistent with
+                                                                                                    existing macro-width
+                                                                                                    reference; requires further
+                                                                                                    object-identity work
+
+    Dominant 2D finite       Not evaluated           Experiment 29 execution
+    component core width     (STOPPED)               stopped before Wyko loading
+                                                                                                    due to locked anchor
+                                                                                                    coordinate discrepancy
+
+    Exact-400 finite         Protocol guard          Experiment 29 stops rather
+    heightmap_x_mm anchors                          than silently changing
+                                                                                                    coordinate semantics
+
+    Silent coordinate        Rejected                Experiment 29 forbids
+    fallback (x_position_mm)                         substituting x_position_mm
+                                                                                                    for missing heightmap_x_mm
+                                                                                                    without explicit protocol
+                                                                                                    approval
+
+    Track 21 sealing         Preserved               Experiment 28 and 29
+                                                                                                    explicitly avoid loading
+                                                                                                    Track 21 Wyko geometry
   ----------------------------------------------------------------------------
 
 ------------------------------------------------------------------------
@@ -1759,13 +1792,15 @@ Current status:
 - The feature/target metadata contract is established.
 - Baseline model integration and evaluation have been completed.
 
-Immediate objectives:
+Immediate objectives (historical; superseded by Phase V pivot):
 
 - **(Completed)** validate final baseline selection using development-only LOTO across Tracks 8, 10, and 14 (Track 21 remained sealed)
 - **(Completed)** freeze the final baseline configuration and reporting protocol for sealed evaluation
-- evaluate on held-out Track 21 only using the frozen pipeline
-- prepare publication-quality figures and tables,
-- refine the final challenge report.
+- (Historical plan) evaluate on held-out Track 21 only using the frozen pipeline
+- (Historical plan) prepare publication-quality figures and tables
+- (Historical plan) refine the final challenge report
+
+Update (Phase V): the workstream is now in a **target-definition audit**. The immediate next step is not additional modeling; it is to resolve the Experiment 29 anchor-coordinate discrepancy and obtain an explicitly approved protocol decision before rerunning Experiment 29 or replacing it.
 
 ------------------------------------------------------------------------
 
@@ -1823,6 +1858,12 @@ requirements fixed. Only after selecting a defensible descriptor will
 multimodal machine-learning models be developed. -->
 
 Following descriptor selection, Phase III engineering infrastructure was completed and baseline multimodal models were evaluated on the development tracks. A subsequent Leave-One-Track-Out (LOTO) study across Tracks 8, 10, and 14 established Ridge Regression (alpha = 1.0) with SEM-only features as the final frozen baseline configuration for sealed Track 21 evaluation. Track 21 remained sealed throughout this process.
+
+Phase V then documented that both the PCA-shape target and a later scalar smoothed-macro-width target produced negative development-only LOTO R². This motivated a pivot to a new target-definition audit on branch `nabarun-exp2-local-width`: whether a defensible **local geometric width** can be extracted directly from Wyko finite/NaN support topology without height-threshold instability.
+
+Experiment 28 implemented the first falsification candidate (Candidate 1: longest contiguous finite y-run per native x-column) on Tracks 8, 10, and 14 (Track 21 sealed). The audit found that Candidate 1 is computable across most native x-columns and sampled boundaries often align with strong height gradients, but the extracted widths show nontrivial adjacent-column discontinuities and are numerically inconsistent with the existing (non-reproducible) `smoothed_macro_width_mm` reference. Candidate 1 was therefore **not accepted** as a final prediction target.
+
+Experiment 29 was implemented to test a stricter 2D object-identity hypothesis (dominant 4-connected finite-support component core geometry) but its latest execution attempt stopped **before Wyko geometry loading** due to a locked anchor-coordinate data discrepancy: finite `heightmap_x_mm` anchors were 399/400 (Track 8), 400/400 (Track 10), and 393/400 (Track 14). A `data_discrepancy.json` was written and the run halted. Track 21 Wyko geometry was not loaded. Experiment 29 has therefore **not** passed or failed scientifically.
 
 ------------------------------------------------------------------------
 
@@ -2843,3 +2884,500 @@ Additional architectures should not be added unless later diagnostics
 provide a specific scientific reason to do so.
 
 Track 21 remains sealed.
+
+------------------------------------------------------------------------
+
+# Phase V Experiments and Local-Width Hypothesis
+
+## 43. Independent scientific audit memo (read-only)
+
+Artifact:
+
+`docs/scientific_audit_memo.md`
+
+Purpose: record (without code changes, without modeling, and without Track 21 geometry access) the scientific justification for pivoting away from the PCA-shape and smoothed-macro-width targets and toward a new hypothesis:
+
+> Wyko finite/NaN support topology may directly encode a defensible local geometric width signal.
+
+Key claims/constraints recorded in the audit (hypotheses, not accepted facts):
+
+- Finite-support topology is preserved by the organizer loader (`load_wyko_asc`) because ASC marks failed measurements as `Bad` → `np.nan`.
+- Unlike the rejected height-threshold width (Experiments 03--05), a finite-support-based width does **not** depend on a chosen MAD multiplier or height threshold.
+- The first falsification candidate should be the **largest contiguous finite y-run** at each x cross-section (parameter-free definition).
+- No model training should occur before the target definition passes falsification/validation on Tracks 8, 10, 14.
+- Track 21 remains sealed for method development.
+
+This memo motivated implementing a controlled falsification audit as Experiment 28.
+
+------------------------------------------------------------------------
+
+## 44. Experiment 28 --- local width extraction audit (Candidate 1: longest finite run)
+
+### Purpose
+
+Falsify (or provisionally support) the simplest finite-support-based local-width definition before any model training:
+
+> **Candidate 1:** for each native Wyko x-column, define local width as the y-extent of the **longest contiguous finite (non-NaN) run**.
+
+This experiment is explicitly **target validation only**. It does not train any predictive model.
+
+### Artifact
+
+Script:
+
+`scripts/28_local_width_extraction_audit.py`
+
+Latest completed run (timestamped output directory):
+
+`processed_data/run_outputs/28_local_width_extraction_audit_20260723_172003/`
+
+Execution (recorded in script and run metadata):
+
+`/opt/homebrew/opt/python@3.11/bin/python3.11 scripts/28_local_width_extraction_audit.py`
+
+### Tracks used / Track 21 sealing
+
+- Development tracks analyzed: **8, 10, 14**
+- Sealed track: **21**
+- Run metadata explicitly records: **"Track 21 was neither loaded nor inspected by this script."**
+
+### Target definition (as implemented)
+
+At each native Wyko x-column:
+
+1. construct the raw finite mask `isfinite(Z_mm[:, j])`;
+2. enumerate contiguous y-index runs of finite pixels (no gap bridging);
+3. select the longest run (ties resolved deterministically by first occurrence in y);
+4. define:
+     - `left_boundary_mm = y_mm[start]`
+     - `right_boundary_mm = y_mm[stop-1]`
+     - `local_width_mm = right_boundary_mm - left_boundary_mm`
+
+Critical exclusions (guardrails):
+
+- **no height thresholding** (no MAD multipliers, no binary thresholded height masks);
+- **no NaN filling** and **no bridging** across NaN gaps;
+- **no smoothing** of width/boundaries;
+- **no detrending used to select boundaries** (detrending performed only for diagnostic plots).
+
+### Configuration and diagnostics
+
+Key diagnostic configuration constants (from script and `run_metadata.json`):
+
+- Representative x for plots: 30, 50, 70, 90 mm (nearest native columns)
+- Hypothetical minimum-run sensitivity sweep: 20, 50, 100, 150 pixels
+- Adjacent-jump thresholds (for descriptive diagnostics): 0.05, 0.10, 0.20, 0.50 mm
+- Ambiguity heuristic: flag columns where longest/second-longest run length ratio ≤ 1.5
+
+Generated artifacts (see run metadata `outputs`):
+
+- Tables (CSV):
+    - `native_local_width.csv` (per native x column)
+    - `all_finite_runs_by_column.csv` (all runs, ranked)
+    - `track_summary.csv`
+    - `adjacent_jump_summary.csv`
+    - `finite_run_topology_summary.csv`
+    - `minimum_run_sensitivity.csv`
+    - `representative_cases.csv`
+    - `morphology_comparison.csv`
+    - `macro_width_comparison.csv` (comparison against `smoothed_macro_width_mm` as an independent reference)
+    - `falsification_summary.csv` (PASS/CONCERN/FAIL/INCONCLUSIVE per criterion)
+- Figures (PNG): per track width vs x, boundaries vs x, 2D NaN-topology overlay, representative cross-sections.
+
+### Predeclared falsification criteria and outcomes (from machine-readable outputs)
+
+The script writes a criterion table `falsification_summary.csv` with per-track judgments. The results below are quoted from those machine-readable outputs (latest run: `20260723_172003`).
+
+#### Criterion: longitudinal width continuity
+
+Observation/metric source: `adjacent_jump_summary.csv` and `falsification_summary.csv`.
+
+- Track 8: **CONCERN** (fraction of adjacent native columns with width jump > 0.2 mm = **0.1527**; width-jump p95 = **0.3066 mm**)
+- Track 10: **CONCERN** (fraction > 0.2 mm = **0.1002**; p95 = **0.2548 mm**)
+- Track 14: **CONCERN** (fraction > 0.2 mm = **0.06055**; p95 = **0.2150 mm**)
+
+Interpretation: Candidate 1 produces nontrivial adjacent-column discontinuities at native x resolution, consistent with finite-support fragmentation and/or structure hopping.
+
+#### Criterion: boundary continuity
+
+Observation/metric source: `adjacent_jump_summary.csv` and `falsification_summary.csv`.
+
+- Track 8: **CONCERN** (left/right boundary jump fraction > 0.2 mm = **0.1085 / 0.07088**)
+- Track 10: **CONCERN** (left/right > 0.2 mm = **0.08167 / 0.09929**)
+- Track 14: **PASS** (left/right > 0.2 mm = **0.04435 / 0.04175**)
+
+Interpretation: boundary trajectories are comparatively stable for Track 14, but Tracks 8 and 10 show nontrivial discontinuities.
+
+#### Criterion: physical plausibility (vs macro width)
+
+Observation/metric source: `track_summary.csv`, `macro_width_comparison.csv`, and `falsification_summary.csv`.
+
+Candidate 1 produces widths bounded by the Wyko y-domain (~0--1.907 mm). The script therefore marks physical plausibility as **CONCERN** for all tracks, explicitly noting that Candidate 1 may measure a **measurable-surface core** rather than a full macro track width.
+
+Representative numeric summary (from `falsification_summary.csv`):
+
+- Track 8: width median **0.8283 mm**, p95 **1.075 mm**
+- Track 10: width median **0.4938 mm**, p95 **0.7407 mm**
+- Track 14: width median **0.4778 mm**, p95 **0.7446 mm**
+
+Macro-width comparison (against `smoothed_macro_width_mm`, as an independent reference; `macro_width_comparison.csv`):
+
+- Track 8: correlation **-0.3945**, MAE **1.888 mm**, means candidate/macro **0.7956 / 2.684 mm**
+- Track 10: correlation **0.1714**, MAE **2.820 mm**, means candidate/macro **0.4807 / 3.300 mm**
+- Track 14: correlation **-0.2714**, MAE **3.130 mm**, means candidate/macro **0.4819 / 3.612 mm**
+
+Interpretation: Candidate 1 is numerically and correlationally inconsistent with the existing macro-width reference. This does not automatically falsify Candidate 1 (the reference itself is not reproducible from code), but it is strong evidence that Candidate 1 is measuring a different physical quantity.
+
+#### Criterion: morphology agreement (independent height-gradient diagnostic)
+
+Observation source: `morphology_comparison.csv` and `falsification_summary.csv`.
+
+All three tracks are marked **PASS** for this diagnostic in the latest run, with representative-case categories dominated by `coincides_with_strong_height_gradient`.
+
+Interpretation: in sampled cases, finite-support boundaries often coincide with strong detrended height gradients, supporting the idea that validity transitions can align with real geometric transitions.
+
+#### Criterion: robustness across development tracks (computability)
+
+Observation source: `falsification_summary.csv`.
+
+All tracks are marked **PASS** on "finite-run-valid column fraction":
+
+- Track 8: **0.9794**
+- Track 10: **0.9452**
+- Track 14: **0.9775**
+
+Interpretation: Candidate 1 can be computed at most native x-columns on all three tracks.
+
+#### Criterion: internal NaN fragmentation / competing runs
+
+Observation source: `finite_run_topology_summary.csv` and `falsification_summary.csv`.
+
+- Track 8: **PASS** (comparable-runs fraction **0.04684**)
+- Track 10: **CONCERN** (comparable-runs fraction **0.12085**)
+- Track 14: **CONCERN** (comparable-runs fraction **0.05815**)
+
+Interpretation: Track 10 has substantial multi-run competition; Candidate 1 is more ambiguity-prone there.
+
+#### Criterion: detrending / NaN mask invariance
+
+Observation source: `run_metadata.json`.
+
+All tracks: **PASS**; the script records raw vs detrended finite-mask differences = **0 pixels**.
+
+Interpretation: detrending (used only for diagnostics) preserved NaN topology exactly.
+
+#### Overall evidence-channel summary (script judgment)
+
+All three tracks are marked **CONCERN** for the integrated evidence-channel agreement criterion.
+
+### Experiment 28 scientific interpretation
+
+Experiment 28 does **not** accept Candidate 1 as a final prediction target.
+
+The audit supports a nuanced conclusion:
+
+- Finite-support topology is a reproducible, parameter-free signal that can be extracted without height thresholds.
+- However, the naive "longest finite run" definition produces nontrivial discontinuities at native x resolution and is numerically inconsistent with the existing (non-reproducible) macro-width column.
+
+Therefore, the next falsification step must explicitly address object identity in **2D** finite-support topology, not only per-column longest-run selection.
+
+This motivated Experiment 29.
+
+------------------------------------------------------------------------
+
+## 45. Experiment 29 --- dominant 2D finite-component core geometry (STOPPED)
+
+### Scientific motivation
+
+Experiment 28 suggested that finite-support transitions can align with meaningful geometric transitions, but Candidate 1 remains discontinuous and ambiguity-prone.
+
+Experiment 29 was designed to test a stricter hypothesis that uses **2D connectedness across x-y** to stabilize object identity:
+
+> Identify the dominant longitudinal 2D finite-support component in the Wyko validity mask and measure a local "core" width derived from that component.
+
+### Artifact
+
+Script:
+
+`scripts/29_dominant_component_core_geometry.py`
+
+Latest execution attempt produced a timestamped output directory:
+
+`processed_data/run_outputs/29_dominant_component_core_geometry_20260724_152546/`
+
+### Intended target definition (as implemented in the script)
+
+The script defines a candidate local geometry target `local_core_width_mm`:
+
+- Compute the 2D finite-support mask `isfinite(Z_mm)`.
+- Label 4-connected components.
+- Select the dominant component by maximum unique x-column extent (tie-breaker: total pixel count).
+- For each x-column, compute the y-span of that dominant component (with a hole-fraction diagnostic).
+- Aggregate to the 400 thermal anchors using a fixed ±0.10 mm window around each anchor and `nanmedian`.
+- An anchor is valid only if the window contains at least 25 native columns with defined widths.
+
+No height thresholds, no morphological cleanup operations, and no detrending-based boundary selection are applied.
+
+### Locked protocol / pre-execution validation
+
+Before loading any Wyko geometry, Experiment 29 enforces a locked data contract for thermal anchors.
+
+Locked requirement:
+
+> Exactly **400** finite `heightmap_x_mm` anchors must exist for each development track (8, 10, 14).
+
+This guard exists to prevent silent coordinate substitution or implicit remapping of the anchor semantics.
+
+### Experiment 29 protocol/data discrepancy (blocking)
+
+The latest execution attempt stopped during this pre-execution validation.
+
+The repository contains 400 dataset rows per development track, but finite `heightmap_x_mm` counts were:
+
+- Track 8: **399 / 400**
+- Track 10: **400 / 400**
+- Track 14: **393 / 400**
+
+Reported bad/nonfinite source row indices (from `data_discrepancy.json`):
+
+- Track 8: `[0]`
+- Track 10: `[]`
+- Track 14: `[800, 801, 802, 803, 804, 805, 806]`
+
+Artifact written:
+
+`processed_data/run_outputs/29_dominant_component_core_geometry_20260724_152546/metadata/data_discrepancy.json`
+
+The recorded status in that JSON is:
+
+`STOPPED_BEFORE_WYKO_GEOMETRY_LOADING`
+
+### Why stopping was correct
+
+The script intentionally did **not** silently:
+
+- substitute `x_position_mm` for missing `heightmap_x_mm`;
+- interpolate or reconstruct missing coordinates;
+- drop rows and continue;
+- change the locked protocol on the fly;
+- proceed to Wyko geometry loading under contradictory coordinate provenance.
+
+This stop behavior preserves protocol integrity. It is not an experimental success, and it is not a scientific failure of the Experiment 29 hypothesis.
+
+### Track 21 sealing confirmation
+
+The discrepancy JSON explicitly records:
+
+`"track21_geometry_loaded": false`
+
+Therefore Track 21 Wyko geometry was **never loaded or inspected** during Experiment 29.
+
+### Experiment 29 scientific status
+
+Experiment 29 has **not** passed or failed scientifically.
+
+Because execution stopped before Wyko geometry loading, no target extraction results, falsification criteria, or diagnostics related to dominant components were evaluated.
+
+Current state:
+
+> **STOPPED — DATA DISCREPANCY BEFORE GEOMETRY LOADING**
+
+Cause: **unresolved pending scientific/provenance review** of anchor-coordinate generation and dataset contract.
+
+## 34. Frozen PCA/SEM Ridge baseline --- LOTO cross-track generalization
+
+The Phase III LOTO model selection across Tracks 8, 10, and 14 selected
+Ridge Regression (alpha = 1.0) with SEM-only features as the frozen
+baseline. The PCA shape targets (pc1--pc5) were predicted using
+flattened 5-frame feature windows.
+
+Pooled LOTO metrics for the frozen baseline:
+
+-   MAE = 1.275480
+-   RMSE = 1.655831
+-   R² = −0.282801
+
+Per-fold R² was negative for all three held-out tracks. The model
+explained zero held-out-track variance and performed comparably to
+predicting the training-track mean.
+
+This established that the PCA shape target, while scientifically
+well-motivated as a normalized cross-sectional shape representation, was
+not learnable from the available feature set under cross-track
+validation.
+
+## 35. Coordinate augmentation experiment (x_norm) --- rejected
+
+A subsequent experiment on the `nabarun-exp1` branch tested whether
+adding a normalized longitudinal position feature (`x_norm =
+(x_position_mm - 60) / 40`) to the frozen SEM-only Ridge model would
+improve cross-track generalization.
+
+Pooled LOTO metrics:
+
+-   MAE = 1.275005
+-   RMSE = 1.668751
+-   R² = −0.269073
+
+Per-fold LOTO metrics:
+
+| Fold | Train tracks | Val track | MAE | RMSE | R² |
+|---|---|---:|---:|---:|---:|
+| holdout_8 | 10+14 | 8 | 1.341 | 1.704 | −0.538 |
+| holdout_10 | 8+14 | 10 | 1.554 | 2.001 | −0.186 |
+| holdout_14 | 8+10 | 14 | 0.930 | 1.205 | −0.168 |
+
+MAE changed negligibly (from 1.275480 to 1.275005). RMSE worsened
+(from 1.656 to 1.669). R² remained negative.
+
+**Decision:** coordinate augmentation rejected. The spatial coordinate
+does not add learnable information about cross-track geometry variation
+in the current PCA target formulation.
+
+## 36. BayesianRidge + thermal physics + smoothed macro width
+
+The project then explored a substantive target reformulation. The PCA
+shape targets were abandoned in favor of a single scalar target:
+`smoothed_macro_width_mm`.
+
+The feature set was simultaneously restructured to use only thermal
+physics features:
+
+-   `peak_temp`
+-   `sqrt_mp_area`
+-   `mp_length`
+
+The model was changed to BayesianRidge.
+
+LOTO evaluation across Tracks 8, 10, and 14:
+
+| Val track | MAE | RMSE | Median AE | R² |
+|---:|---:|---:|---:|---:|
+| 8 | 0.309 | 0.443 | 0.224 | −0.004 |
+| 10 | 0.532 | 0.797 | 0.347 | −0.014 |
+| 14 | 0.505 | 0.672 | 0.361 | −0.107 |
+
+Mean LOTO metrics:
+
+-   MAE = 0.449
+-   RMSE = 0.637
+-   Median AE = 0.310
+-   R² = −0.042
+
+Absolute errors improved substantially relative to the PCA formulation.
+However, per-fold R² remained negative for all three folds. The model
+still explained zero held-out-track variance.
+
+**Important note:** the `smoothed_macro_width_mm` column exists in the
+final multimodal dataset, but the Python script that generated it is not
+present in the current repository checkout. The generation methodology
+is therefore not reproducible from code. Track 21 has a constant value
+(5.732928 mm, std = 0), suggesting it was set to a placeholder.
+
+## 37. Track 21 blind inference --- engineering success
+
+A Track 21 blind-inference pipeline was successfully implemented for the
+BayesianRidge + thermal physics + smoothed_macro_width configuration.
+
+The pipeline:
+
+-   trained on all 1200 development rows (Tracks 8, 10, 14);
+-   scaled features using development-track statistics only;
+-   generated 396 Track 21 prediction windows;
+-   produced predictions with mean ≈ 4.03 mm, std ≈ 0.10 mm.
+
+The engineering work is preserved in:
+
+`processed_data/phase5/track21_blind_inference/27_phase5_track21_blind_inference_20260721_215848/`
+
+**This is an engineering success only.** No Track 21 ground-truth
+evaluation is available to us. Successful inference does not demonstrate
+predictive accuracy. Track 21 was treated as unlabeled inference only;
+it was not used for scaler fitting, model fitting, or target alignment.
+
+## 38. Decision to pivot --- no further tuning of the current target
+
+The accumulated evidence supports the following conclusion:
+
+> All target formulations tested to date produce negative per-fold R²
+> under LOTO. Continued hyperparameter tuning or model-family
+> exploration on the existing targets is unlikely to yield meaningful
+> improvement.
+
+The problem is the target definition, not the model family or features.
+
+This motivates a fundamental target reformulation rather than further
+optimization of the existing pipeline.
+
+## 39. Creation of the nabarun-exp2-local-width branch
+
+The `nabarun-exp2-local-width` branch was created to investigate a new
+target hypothesis: direct local track width extracted from the Wyko
+height maps using NaN/finite-support topology.
+
+## 40. New hypothesis: direct local width from finite-support topology
+
+Independent evidence suggests that NaN/finite-support topology in the
+Wyko profilometry data may contain strong information about actual track
+boundaries.
+
+The physical rationale: the Bruker/Wyko white-light interferometer
+measures successfully on relatively smooth, reflective surfaces. The DED
+track produces a resolidified surface that is typically smoother than the
+surrounding rough substrate. NaN pixels occur where the interferometer
+fails due to steep slopes, high roughness, or low reflectivity.
+
+Therefore, the boundary between finite-support regions and NaN-dominated
+regions may approximate the physical track boundary.
+
+A read-only scientific audit was performed to determine whether this
+hypothesis is consistent with the raw data and existing experimental
+evidence. The audit found:
+
+-   NaN topology is preserved throughout the loading and preprocessing
+    chain.
+-   Cross-section analysis at representative x-positions shows one
+    dominant long finite run (typically 0.5--0.9 mm, 100--230 pixels)
+    surrounded by sparse, fragmented finite regions.
+-   This pattern is physically consistent with successful measurement
+    on the track surface and failed measurement on rough substrate.
+-   No height-value threshold is needed for this definition, which
+    eliminates the dominant instability identified in Experiments 03--05.
+
+The hypothesis has not been validated. It requires falsification testing
+before implementation as a prediction target.
+
+## 41. Decision to independently audit rather than copy
+
+The decision was made to independently determine, from our own raw data
+and repository evidence, whether a scientifically defensible direct
+local-width target exists. This includes:
+
+-   not copying another team's implementation;
+-   not assuming NaN-valley interpretation is correct;
+-   not forcing our data to reproduce reported results;
+-   considering NaN/finite-support topology as one candidate evidence
+    source that must compete against alternatives;
+-   designing falsification tests capable of disproving the hypothesis.
+
+## 42. Process metadata audit
+
+The companion paper (arXiv:2607.07965) states that four laser power
+settings were used: 200, 300, 350, and 400 W. However, the paper does
+not specify which track ID corresponds to which power level.
+
+The mapping assumed in the Phase V planning document (Track 8 = 400 W,
+Track 10 = 350 W, Track 14 = 300 W, Track 21 = 200 W) is not supported
+by any official organizer documentation found in the repository.
+
+Laser power should not be used as a predictor feature unless the
+track-to-power mapping is officially confirmed.
+
+## Current status
+
+The project is at the beginning of a new target-definition audit. The
+next step is to implement the largest-contiguous-finite-run width
+extractor and run falsification tests on Tracks 8, 10, and 14. No model
+training should proceed until the new target passes validation.
+
+Track 21 remains sealed for method development.
