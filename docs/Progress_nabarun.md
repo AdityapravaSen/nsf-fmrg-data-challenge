@@ -2,15 +2,14 @@
 
 ## Height-Map Target Extraction --- Progress and Scientific Decision Log
 
-**Workstream:** Bruker/Wyko height-map target extraction (Person B)\
-**Status:** Target-definition audit (finite-support / local-width)\
+**Workstream:** Bruker/Wyko height-map target extraction and probabilistic local-width deployment (Person B)\
+**Status:** Final probabilistic inference completed; report/submission packaging pending\
 **Development tracks:** 8, 10, 14\
-**Sealed track:** 21 --- do not load or inspect during method
-development\
-**Last completed major experiment:** Experiment 28 --- local width from Wyko finite-support topology (Candidate 1: longest contiguous finite y-run)\
-**Current scientific status:** Experiments 03--27 recorded; Phase V local-width hypothesis audit in progress. Experiment 28 completed with multiple concerns and no scientific acceptance of Candidate 1 as a prediction target. Experiment 29 execution **stopped before Wyko geometry loading** due to a locked anchor-coordinate data discrepancy; Track 21 geometry remained sealed and was not loaded.\
-**Current project phase:** Phase V target audit --- finite-support / local-width hypothesis falsification\
-**Current focus:** Resolve the Experiment 29 anchor-coordinate protocol/data discrepancy (finite `heightmap_x_mm` anchors) and obtain an explicitly approved protocol decision before rerunning or replacing Experiment 29.\
+**Sealed track:** 21 --- target/Wyko geometry remains sealed; predictor information has now been used solely for final inference\
+**Last completed major experiment:** Experiment 33 --- final Track 21 probabilistic local-width inference using the frozen Experiment 32 BayesianRidge pipeline\
+**Current scientific status:** Experiments 03--33 recorded. Experiment 29 completed after coordinate-protocol resolution and produced `local_core_width_mm`, but its original target audit decision was **REJECT TARGET** because continuity/coverage criteria failed. Experiment 30 completed and showed weak deterministic learnability with negative fold-wise R². Experiment 31 Stage A failed and Stage B did not run. Experiment 32 completed and **PASSED** pre-registered probabilistic evaluation by CRPS against a training-only Gaussian baseline. Experiment 33 completed final Track 21 predictor-only inference; no Track 21 target/Wyko geometry was loaded and no Track 21 metrics were computed.\
+**Current project phase:** Phase V final probabilistic inference / report preparation\
+**Current focus:** Prepare final report and submission package from the frozen Experiment 32/33 probabilistic local-width pipeline.\
 **Current branch:** `nabarun-exp2-local-width`
 
 ------------------------------------------------------------------------
@@ -1800,7 +1799,9 @@ Immediate objectives (historical; superseded by Phase V pivot):
 - (Historical plan) prepare publication-quality figures and tables
 - (Historical plan) refine the final challenge report
 
-Update (Phase V): the workstream is now in a **target-definition audit**. The immediate next step is not additional modeling; it is to resolve the Experiment 29 anchor-coordinate discrepancy and obtain an explicitly approved protocol decision before rerunning Experiment 29 or replacing it.
+Update (Phase V historical): the workstream entered a **target-definition audit** to resolve the Experiment 29 anchor-coordinate discrepancy and obtain an explicitly approved protocol decision before rerunning or replacing Experiment 29.
+
+Current update after Experiments 29--33: that historical target-audit plan has been superseded. Experiment 29 was rerun after coordinate-protocol resolution, Experiment 30 tested deterministic learnability, Experiment 31 failed Stage A, Experiment 32 passed the pre-registered probabilistic evaluation, and Experiment 33 completed final Track 21 predictor-only inference. The immediate next step is now **final report preparation / submission packaging**, not further target-definition auditing.
 
 ------------------------------------------------------------------------
 
@@ -1863,7 +1864,9 @@ Phase V then documented that both the PCA-shape target and a later scalar smooth
 
 Experiment 28 implemented the first falsification candidate (Candidate 1: longest contiguous finite y-run per native x-column) on Tracks 8, 10, and 14 (Track 21 sealed). The audit found that Candidate 1 is computable across most native x-columns and sampled boundaries often align with strong height gradients, but the extracted widths show nontrivial adjacent-column discontinuities and are numerically inconsistent with the existing (non-reproducible) `smoothed_macro_width_mm` reference. Candidate 1 was therefore **not accepted** as a final prediction target.
 
-Experiment 29 was implemented to test a stricter 2D object-identity hypothesis (dominant 4-connected finite-support component core geometry) but its latest execution attempt stopped **before Wyko geometry loading** due to a locked anchor-coordinate data discrepancy: finite `heightmap_x_mm` anchors were 399/400 (Track 8), 400/400 (Track 10), and 393/400 (Track 14). A `data_discrepancy.json` was written and the run halted. Track 21 Wyko geometry was not loaded. Experiment 29 has therefore **not** passed or failed scientifically.
+Experiment 29 was implemented to test a stricter 2D object-identity hypothesis (dominant 4-connected finite-support component core geometry). Its first execution attempt stopped **before Wyko geometry loading** due to a locked anchor-coordinate data discrepancy: finite `heightmap_x_mm` anchors were 399/400 (Track 8), 400/400 (Track 10), and 393/400 (Track 14). A `data_discrepancy.json` was written and the run halted. Track 21 Wyko geometry was not loaded.
+
+Superseding update: the discrepancy was subsequently resolved as a domain-edge coordinate effect rather than corrupted data, with `x_position_mm` explicitly approved as the canonical thermal-anchor coordinate. Experiment 29 then completed in `processed_data/run_outputs/29_dominant_component_core_geometry_20260724_174420/` and produced `local_core_width_mm`, but the target audit decision was **REJECT TARGET** because continuity/coverage criteria failed. Experiments 30--33 then proceeded from this historical context: deterministic local-width prediction remained weak, but Experiment 32 passed its probabilistic CRPS-based evaluation and Experiment 33 completed final predictor-only Track 21 inference.
 
 ------------------------------------------------------------------------
 
@@ -3085,7 +3088,7 @@ This motivated Experiment 29.
 
 ------------------------------------------------------------------------
 
-## 45. Experiment 29 --- dominant 2D finite-component core geometry (STOPPED)
+## 45. Experiment 29 --- dominant 2D finite-component core geometry (completed; target rejected for deterministic use)
 
 ### Scientific motivation
 
@@ -3101,9 +3104,13 @@ Script:
 
 `scripts/29_dominant_component_core_geometry.py`
 
-Latest execution attempt produced a timestamped output directory:
+The initial execution attempt produced a timestamped output directory:
 
 `processed_data/run_outputs/29_dominant_component_core_geometry_20260724_152546/`
+
+After protocol review, the coordinate discrepancy was identified as a domain-edge coordinate effect rather than corrupted data. `x_position_mm` was explicitly approved as the canonical thermal-anchor coordinate. The completed run produced:
+
+`processed_data/run_outputs/29_dominant_component_core_geometry_20260724_174420/`
 
 ### Intended target definition (as implemented in the script)
 
@@ -3174,15 +3181,340 @@ Therefore Track 21 Wyko geometry was **never loaded or inspected** during Experi
 
 ### Experiment 29 scientific status
 
-Experiment 29 has **not** passed or failed scientifically.
+The stopped pre-review run above is historical and preserved because it records why silent coordinate substitution was not allowed. The completed Experiment 29 run is the current scientific artifact.
 
-Because execution stopped before Wyko geometry loading, no target extraction results, falsification criteria, or diagnostics related to dominant components were evaluated.
+Completed artifact:
 
-Current state:
+`processed_data/run_outputs/29_dominant_component_core_geometry_20260724_174420/tables/anchor_aggregated_width.csv`
 
-> **STOPPED — DATA DISCREPANCY BEFORE GEOMETRY LOADING**
+Target definition:
 
-Cause: **unresolved pending scientific/provenance review** of anchor-coordinate generation and dataset contract.
+- `local_core_width_mm`
+- valid only where `anchor_valid == True`
+- no height thresholds, no morphological cleanup, no target smoothing, no gap bridging
+
+Final global target decision from `falsification_decision.csv`:
+
+> **REJECT TARGET**
+
+Important numerical evidence from repository artifacts:
+
+| Track | Valid-anchor fraction | Mean local_core_width_mm | Std local_core_width_mm | p95 adjacent-anchor jump | Zero-valid anchors inside domain |
+|---:|---:|---:|---:|---:|---:|
+| 8 | 0.9575 | 1.163711 | 0.178463 | 0.401286 | 14 |
+| 10 | 0.8850 | 0.939223 | 0.195850 | 0.449170 | 46 |
+| 14 | 0.9450 | 0.842836 | 0.235671 | 0.487596 | 14 |
+
+Failed target-audit criteria included:
+
+- B3 p95 adjacent-anchor jump ≤ 0.20 mm failed for all three tracks.
+- D2 zero-valid-column anchors inside domain == 0 failed for all three tracks.
+- D1 anchor-valid fraction ≥ 0.90 failed for Track 10.
+- A2 dominant x-extent fraction ≥ 0.95 failed for Track 10.
+
+Criteria that supported physical validity of valid-anchor values included:
+
+- E1 boundary-gradient percentile ≥ 80% passed for all tracks: 95.62% (Track 8), 93.32% (Track 10), 93.82% (Track 14).
+- E2 median width ordering passed: Track 8 highest, Tracks 10/14 lower.
+- A3 dominant-over-second x-extent ratio passed: 43.22 (Track 8), 76.21 (Track 10), 40.21 (Track 14).
+- C1/C2 positive mean and nonzero within-track standard deviation passed for all tracks.
+- C3 central-90 overlap count was 3/3.
+
+Interpretation: Experiment 29 rejected `local_core_width_mm` as a spatially smooth deterministic target, but the valid-anchor measurements remained physically meaningful enough to motivate a later explicitly probabilistic evaluation.
+
+------------------------------------------------------------------------
+
+## 46. Experiment 30 --- core-width learnability diagnostic
+
+### Purpose
+
+Experiment 30 tested whether the completed Experiment 29 target `local_core_width_mm` contained learnable signal from thermal physics features under development-only Leave-One-Track-Out validation.
+
+This was a deterministic learnability diagnostic, not a final probabilistic submission pipeline.
+
+### Artifact
+
+Script:
+
+`scripts/30_core_width_learnability_diagnostic.py`
+
+Output directory:
+
+`processed_data/run_outputs/30_core_width_learnability_diagnostic_20260724_204318/`
+
+### Locked data and feature semantics
+
+- Training/evaluation tracks: 8, 10, 14 only.
+- Track 21 remained sealed.
+- Target: `local_core_width_mm` from Experiment 29.
+- Target filter: `anchor_valid == True` and finite `local_core_width_mm`.
+- Feature bases: `peak_temp`, `sqrt_mp_area = sqrt(mp_area_px)`, `mp_length`.
+- Window: centered 5-frame offsets `[-2, -1, 0, +1, +2]`.
+- Total model features: 15.
+- Model: `sklearn.linear_model.BayesianRidge()` with default hyperparameters.
+- Scaler: `StandardScaler`, fit on training fold only.
+
+Sample counts:
+
+| Track | Valid centered-window samples |
+|---:|---:|
+| 8 | 383 |
+| 10 | 354 |
+| 14 | 377 |
+| Total | 1114 |
+
+### Deterministic LOTO results
+
+| Fold | Train tracks | Holdout | MAE | RMSE | R² | Pearson r |
+|---|---|---:|---:|---:|---:|---:|
+| holdout_8 | 10+14 | 8 | 0.143526 | 0.215281 | −0.458981 | 0.035772 |
+| holdout_10 | 8+14 | 10 | 0.159666 | 0.204686 | −0.095359 | 0.055399 |
+| holdout_14 | 8+10 | 14 | 0.171544 | 0.271285 | −0.338554 | 0.001239 |
+| pooled OOF | all folds | pooled | 0.158137 | 0.232710 | +0.098209 | 0.445007 |
+
+### Decision and interpretation
+
+Experiment 30's deterministic classification was **NO SIGNAL** because all three fold-wise R² values were negative. The positive pooled R² is not evidence of strong within-track deterministic local prediction; it mostly reflects process-regime separation after concatenating tracks.
+
+This result preserved the Experiment 29 concern: local deterministic spatial variation is not predictable from the available thermal features. However, the systematic cross-track ordering and pooled behavior motivated a narrower question: whether the model's predictive **distribution** could be useful even when the conditional mean is weak within held-out tracks.
+
+------------------------------------------------------------------------
+
+## 47. Experiment 31 --- density-envelope width audit
+
+### Purpose
+
+Experiment 31 tested a pre-registered alternative target, `density_envelope_width_mm`, designed to reduce sensitivity to isolated finite-support holes using a density envelope over the Wyko finite/NaN mask.
+
+This was a two-stage protocol:
+
+- Stage A: target extraction and audit.
+- Stage B: run the Experiment 30 learnability diagnostic only if Stage A passed or conditionally passed.
+
+### Artifact
+
+Script:
+
+`scripts/31_density_envelope_width_audit.py`
+
+Output directory:
+
+`processed_data/run_outputs/31_density_envelope_width_audit_20260724_211918/`
+
+### Stage A target definition
+
+- Kernel half-width: 25 px.
+- Kernel width: 51 px.
+- Density threshold τ: 0.30.
+- Aggregation half-window: ±0.10 mm.
+- Minimum valid native columns per anchor: 25.
+- Parameters were fixed before evaluation and were not tuned after seeing failure.
+- Track 21 Wyko geometry remained sealed.
+
+### Stage A per-track target summary
+
+| Track | Native valid fraction | Anchor valid fraction | Mean width | Std width | Native p95 jump | Anchor p95 jump | Zero-valid anchors inside domain |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 8 | 0.979076 | 0.975 | 1.197459 | 0.157973 | 0.230956 | 0.275953 | 8 |
+| 10 | 0.928675 | 0.930 | 0.964147 | 0.196872 | 0.219010 | 0.321746 | 23 |
+| 14 | 0.967552 | 0.950 | 0.865184 | 0.149258 | 0.254848 | 0.384462 | 11 |
+
+### Stage A criteria
+
+| Track | SA1 native valid ≥95% | SA2 anchor valid ≥92% | SA3 p95 jump ≤0.20 | SA4 mean >0 | SA5 std >0 | SA6 zero-valid anchors ≤5 |
+|---:|---|---|---|---|---|---|
+| 8 | PASS | PASS | FAIL | PASS | PASS | FAIL |
+| 10 | FAIL | PASS | FAIL | PASS | PASS | FAIL |
+| 14 | PASS | PASS | FAIL | PASS | PASS | FAIL |
+
+Final Stage A decision:
+
+> **FAIL**
+
+Stage B did not run. No parameters were changed after failure.
+
+Interpretation: the density-envelope target improved some coverage properties but still failed the locked continuity and missing-support requirements. Experiment 31 did not supersede Experiment 29/30 and did not authorize a new target.
+
+------------------------------------------------------------------------
+
+## 48. Experiment 32 --- probabilistic local-width evaluation
+
+### Purpose
+
+Experiment 32 tested a narrower probabilistic hypothesis:
+
+> BayesianRidge's native posterior predictive distribution for `local_core_width_mm`, trained on thermal physics features, provides a better probabilistic prediction of held-out local width than a naive training-only Gaussian baseline.
+
+This did **not** attempt to rescue deterministic within-track R². Negative fold-wise R² values from Experiment 30 remain valid and visible.
+
+### Artifacts
+
+Protocol:
+
+`docs/experiment_32_methodological_audit.md`
+
+Script:
+
+`scripts/32_probabilistic_local_width_evaluation.py`
+
+Output directory:
+
+`processed_data/run_outputs/32_probabilistic_local_width_evaluation_20260725_203529/`
+
+### Frozen methodology
+
+- Target: `local_core_width_mm` from Experiment 29.
+- Training/evaluation rows: `anchor_valid == True` and finite target.
+- Features and windows exactly matched Experiment 30.
+- Model: default `BayesianRidge()`.
+- Uncertainty: native `model.predict(X, return_std=True)` only.
+- No residual inflation, held-out calibration, conformal adjustment, or sigma scaling.
+- Comparator: training-only Gaussian `Normal(mean_train, sample_std_train_ddof1)` per fold.
+- Track 21 remained completely sealed; Track 21 rows were not read during Experiment 32 evaluation.
+
+### Deterministic diagnostics retained
+
+| Fold | MAE | RMSE | R² | Pearson r |
+|---|---:|---:|---:|---:|
+| Holdout 8 | 0.143526 | 0.215281 | −0.458981 | 0.035772 |
+| Holdout 10 | 0.159666 | 0.204686 | −0.095359 | 0.055399 |
+| Holdout 14 | 0.171544 | 0.271285 | −0.338554 | 0.001239 |
+| Pooled OOF | 0.158137 | 0.232710 | +0.098209 | 0.445007 |
+
+### BayesianRidge native probabilistic metrics
+
+| Fold | CRPS | NLL | 90% coverage | Mean 90% interval width |
+|---|---:|---:|---:|---:|
+| Holdout 8 | 0.114788 | −0.116882 | 0.900783 | 0.713712 |
+| Holdout 10 | 0.113660 | −0.167172 | 0.912429 | 0.681550 |
+| Holdout 14 | 0.136624 | 0.276295 | 0.835544 | 0.630152 |
+| Pooled OOF | 0.121819 | 0.000196 | 0.882406 | 0.675213 |
+
+Naive training-only Gaussian pooled CRPS: 0.170059.
+
+CRPS relative improvement versus naive:
+
+- Holdout 8: 40.32%.
+- Holdout 10: 3.05%.
+- Holdout 14: 30.66%.
+- Pooled OOF: 28.37%.
+
+### Pre-registered decision-rule evaluation
+
+PASS criteria:
+
+1. Pooled model CRPS < pooled naive CRPS: **PASS** (0.121819 < 0.170059).
+2. Model CRPS < naive CRPS on at least 2/3 folds: **PASS** (3/3 folds).
+3. 90% coverage ≥ 75% on all three folds: **PASS** (0.900783, 0.912429, 0.835544).
+
+FAIL triggers did not activate.
+
+Final Experiment 32 decision:
+
+> **PASS**
+
+Interpretation: deterministic local-mean prediction remains weak, but the BayesianRidge native predictive distribution contains useful probabilistic information beyond the naive training-only Gaussian comparator under development-only LOTO.
+
+------------------------------------------------------------------------
+
+## 49. Experiment 33 --- final Track 21 probabilistic local-width inference
+
+### Status
+
+Experiment 33 is final inference/deployment of the frozen Experiment 32 pipeline. It is **not** a new model-selection experiment.
+
+### Artifact
+
+Script:
+
+`scripts/33_track21_probabilistic_local_width_inference.py`
+
+Output directory:
+
+`processed_data/run_outputs/33_track21_probabilistic_local_width_inference_20260725_204649/`
+
+Primary prediction CSV:
+
+`processed_data/run_outputs/33_track21_probabilistic_local_width_inference_20260725_204649/predictions/track21_probabilistic_local_width_predictions.csv`
+
+Additional artifacts:
+
+- `arrays/track21_predictive_mean.npy`
+- `arrays/track21_predictive_std.npy`
+- `arrays/track21_predictive_distribution.npz`
+- `models/bayesian_ridge_parameters.json`
+- `models/feature_scaler_stats.json`
+- `metadata/run_metadata.json`
+- `metadata/training_metadata.json`
+- `metadata/track21_inference_metadata.json`
+- `figures/track21_predictive_mean_90pct_interval.png`
+
+### Final training and inference configuration
+
+- Final training tracks: 8, 10, 14.
+- Final training sample count: 1114.
+- Training samples by track: 383 (Track 8), 354 (Track 10), 377 (Track 14).
+- Feature set: `peak_temp`, `sqrt_mp_area`, `mp_length` over centered offsets `[-2, -1, 0, +1, +2]`.
+- Feature order: `peak_temp_t-2`, `sqrt_mp_area_t-2`, `mp_length_t-2`, `peak_temp_t-1`, `sqrt_mp_area_t-1`, `mp_length_t-1`, `peak_temp_t+0`, `sqrt_mp_area_t+0`, `mp_length_t+0`, `peak_temp_t+1`, `sqrt_mp_area_t+1`, `mp_length_t+1`, `peak_temp_t+2`, `sqrt_mp_area_t+2`, `mp_length_t+2`.
+- Scaler: `StandardScaler`, fit on development data only.
+- Model: default `BayesianRidge()`, fit on development data only.
+- Uncertainty: native BayesianRidge posterior predictive standard deviation.
+- No uncertainty recalibration or inflation was applied.
+
+### Track 21 predictor row accounting
+
+- Track 21 predictor rows available: 400.
+- Track 21 predictions generated: 396.
+- Excluded rows: 4.
+- Reason: incomplete centered 5-frame window at the first two and last two predictor rows.
+- Excluded frames: 329, 330, 727, 728.
+- Nonfinite predictor exclusions: 0.
+
+### Track 21 prediction summaries
+
+Predictive mean `local_core_width_mm` summary:
+
+| n | min | max | mean | std | median | p05 | p95 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 396 | 0.586828 | 0.811685 | 0.668858 | 0.028703 | 0.666974 | 0.626182 | 0.716725 |
+
+Predictive standard deviation summary:
+
+| n | min | max | mean | std | median | p05 | p95 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 396 | 0.206151 | 0.220256 | 0.209296 | 0.002644 | 0.208696 | 0.206554 | 0.216087 |
+
+Mean interval widths:
+
+| Interval | Mean width (mm) |
+|---|---:|
+| 50% | 0.282336 |
+| 80% | 0.536448 |
+| 90% | 0.688523 |
+| 95% | 0.820426 |
+
+### Track 21 sealing and validation
+
+Track 21 predictor information was used solely for final inference. Track 21 target/Wyko geometry remained sealed.
+
+Validation checks recorded in metadata:
+
+- Track 21 target/Wyko geometry was never loaded.
+- Training contained only Tracks 8, 10, and 14.
+- Track 21 was used only for predictor inference.
+- Scaler/model were fit only on development data.
+- Feature order exactly matched Experiment 32.
+- Predictive means were finite.
+- Predictive standard deviations were finite and strictly positive.
+- CSV, NPY, and NPZ prediction arrays matched.
+- Prediction ordering was deterministic.
+- No Track 21 target-derived columns entered preprocessing or model input.
+- No Track 21 metrics were computed.
+
+### Final project status
+
+The final defensible conclusion is narrow: the selected BayesianRidge probabilistic local-width model outperformed a training-only naive Gaussian comparator under development-only LOTO according to CRPS on all three held-out development tracks, with acceptable pre-registered interval coverage. Track 21 now has predictor-only probabilistic local-width predictions generated by that frozen methodology. The remaining work is final report preparation and submission packaging, not additional model selection or target tuning.
+
 
 ## 34. Frozen PCA/SEM Ridge baseline --- LOTO cross-track generalization
 
