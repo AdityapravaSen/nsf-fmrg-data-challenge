@@ -13,6 +13,7 @@ processed_data/
 *.mp4
 *.gif
 *.csv
+.vscode/
 
 # Keep folder placeholders
 !data/raw/**/.gitkeep
